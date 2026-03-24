@@ -1,0 +1,9 @@
+*.txt
+*.md
+
+*.com
+*.COM
+*.exe
+*.EXE
+
+*-linux

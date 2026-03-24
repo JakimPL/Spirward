@@ -1,0 +1,70 @@
+#include "video.h"
+#include "spiral.h"
+
+#ifdef __DJGPP__
+#include <conio.h>
+#else
+#include <SDL2/SDL.h>
+#endif
+
+void render()
+{
+    for (int x = 0; x < SCREEN_WIDTH; x++)
+    {
+        for (int y = 0; y < SCREEN_HEIGHT; y++)
+        {
+            const int index = y * SCREEN_WIDTH + x;
+            const unsigned char color = (unsigned char)(image[index] * 255.0f);
+            video_set_pixel(x, y, color);
+        }
+    }
+}
+
+void frame()
+{
+    draw();
+    render();
+    video_present();
+    v_offset += 0.01f;
+    u_offset += 0.015f;
+}
+
+int main(void)
+{
+
+    if (video_init() != 0)
+    {
+        return 1;
+    }
+
+    calculate_uv_values();
+    frame();
+
+#ifdef __DJGPP__
+    while (!kbhit())
+    {
+        frame();
+    }
+    getch();
+#else
+    SDL_Event event;
+    int running = 1;
+    while (running)
+    {
+        while (SDL_PollEvent(&event))
+        {
+            if (event.type == SDL_QUIT ||
+                (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE))
+            {
+                running = 0;
+            }
+        }
+
+        frame();
+        SDL_Delay(16); /* ~60 FPS */
+    }
+#endif
+
+    video_cleanup();
+    return 0;
+}

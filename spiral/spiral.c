@@ -1,0 +1,138 @@
+#include <math.h>
+#include <stdio.h>
+
+#include "spiral.h"
+
+const float spiral_minor_radius = 1.0f;
+const float spiral_major_radius = 2.0f;
+const float v_step = 2.0f * M_PI / V_STEPS;
+const float y_step = (float)SCREEN_HEIGHT / (float)U_STEPS;
+
+const float v_checkerboard_size = (2.0f * M_PI) / CHECKERBOARD_V_SIZE;
+const float u_checkerboard_size = v_checkerboard_size * CHECKERBOARD_ASPECT_RATIO;
+const float checkerboard_dark = 0.2f;
+const float checkerboard_light = 0.9f;
+
+const float focal_length = 150.0f;
+float camera_position[3] = {0.0f, -3.0f, -1.0f};
+
+float u_offset = 0.0f;
+float v_offset = 0.0f;
+
+float uv[2];
+float xyz[3];
+int xy[2];
+float depth;
+float image[SCREEN_WIDTH * SCREEN_HEIGHT];
+float depth_buffer[SCREEN_WIDTH * SCREEN_HEIGHT];
+float us[U_STEPS];
+float v_steps[U_STEPS];
+
+void calculate_uv_values()
+{
+    for (int i = 0; i < U_STEPS; i++)
+    {
+        const float y = 1.0f + i * y_step;
+        const float u = camera_position[2] - focal_length * camera_position[1] / y;
+        us[i] = u;
+        v_steps[i] = V_STEPS - (V_STEPS - 1.0f) * i / (U_STEPS - 1.0f);
+    }
+}
+
+void project_to_screen()
+{
+    const float point_x = xyz[0] - camera_position[0];
+    const float point_y = xyz[1] - camera_position[1];
+    const float point_z = xyz[2] - camera_position[2];
+    depth = point_x * point_x + point_y * point_y + point_z * point_z;
+
+    xy[0] = (int)(HALF_SCREEN_WIDTH + focal_length * point_x / point_z);
+    xy[1] = (int)(focal_length * point_y / point_z);
+}
+
+float calculate_light()
+{
+    return 1.0f / (1.0f + 0.02f * depth);
+}
+
+bool checkerboard_pattern()
+{
+    const int u_index = (int)(uv[0] / u_checkerboard_size);
+    const int v_index = (int)(uv[1] / v_checkerboard_size);
+    return (u_index + v_index) % 2 == 0;
+}
+
+float checkerboard_color()
+{
+    return checkerboard_pattern() ? checkerboard_light : checkerboard_dark;
+}
+
+bool is_within_bounds()
+{
+    return xy[0] >= 0 && xy[0] < SCREEN_WIDTH && xy[1] >= 0 && xy[1] < SCREEN_HEIGHT;
+}
+
+void update_depth_buffer()
+{
+    const int index = xy[1] * SCREEN_WIDTH + xy[0];
+    if (depth < depth_buffer[index])
+    {
+        const float light = calculate_light();
+        const float checkerboard_value = checkerboard_color();
+        depth_buffer[index] = depth;
+        image[index] = light * checkerboard_value;
+    }
+}
+
+void clear_buffers()
+{
+    for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++)
+    {
+        image[i] = 0.0f;
+        depth_buffer[i] = 1e30f;
+    }
+}
+
+void compute_spiral_point(float u, float v)
+{
+    const float v_angle = v + v_offset;
+    const float u_angle = u + u_offset;
+    const float cos_u = cosf(u_angle);
+    const float sin_u = sinf(u_angle);
+    const float cos_v = cosf(v_angle);
+    const float sin_v = sinf(v_angle);
+
+    xyz[0] = spiral_major_radius * sin_u + spiral_minor_radius * cos_v;
+    xyz[1] = spiral_major_radius * cos_u + spiral_minor_radius * sin_v;
+    xyz[2] = u;
+
+    uv[0] = u;
+    uv[1] = v;
+}
+
+void draw_spiral()
+{
+    for (int u_step_index = 0; u_step_index < U_STEPS; ++u_step_index)
+    {
+        const int v_steps_for_u = v_steps[u_step_index];
+        float v = 0.0f;
+        float v_step = 2.0f * M_PI / v_steps_for_u;
+        for (int v_step_index = 0; v_step_index < v_steps_for_u; ++v_step_index)
+        {
+            const float u = us[u_step_index];
+            v += v_step;
+            compute_spiral_point(u, v);
+            project_to_screen();
+            if (is_within_bounds())
+            {
+                update_depth_buffer();
+            }
+        }
+    }
+}
+
+void draw()
+{
+    clear_buffers();
+    draw_spiral();
+}
