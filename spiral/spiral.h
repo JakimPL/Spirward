@@ -5,13 +5,13 @@
 
 #define M_PI 3.14159265358979323846
 
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 200
-#define HALF_SCREEN_WIDTH (SCREEN_WIDTH / 2)
-#define HALF_SCREEN_HEIGHT (SCREEN_HEIGHT / 2)
+#define SPIRAL_SCREEN_WIDTH 160
+#define SPIRAL_SCREEN_HEIGHT 100
+#define HALF_SPIRAL_SCREEN_WIDTH (SPIRAL_SCREEN_WIDTH / 2)
+#define HALF_SPIRAL_SCREEN_HEIGHT (SPIRAL_SCREEN_HEIGHT / 2)
 
-#define V_STEPS 1024
-#define U_STEPS (SCREEN_HEIGHT * 4)
+#define V_STEPS 64
+#define U_STEPS (SPIRAL_SCREEN_HEIGHT * 4)
 
 #define CHECKERBOARD_V_SIZE 8
 #define CHECKERBOARD_ASPECT_RATIO 1.0f
@@ -35,15 +35,19 @@ extern float v_offset;
 extern float uv[2];
 extern float xyz[3];
 extern int xy[2];
+
 extern float depth;
-extern float image[SCREEN_WIDTH * SCREEN_HEIGHT];
-extern float depth_buffer[SCREEN_WIDTH * SCREEN_HEIGHT];
-extern float us[U_STEPS];
+extern float light;
+extern float checkerboard_value;
+
+extern float image[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
+extern float depth_buffer[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
+extern float u_values[U_STEPS];
 extern float v_steps[U_STEPS];
 
 void calculate_uv_values();
 void project_to_screen();
-float calculate_light();
+void calculate_light();
 bool checkerboard_pattern();
 bool is_within_bounds();
 void update_depth_buffer();

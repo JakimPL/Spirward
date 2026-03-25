@@ -9,13 +9,16 @@
 
 void render()
 {
-    for (int x = 0; x < SCREEN_WIDTH; x++)
+    for (int x = 0; x < SPIRAL_SCREEN_WIDTH; x++)
     {
-        for (int y = 0; y < SCREEN_HEIGHT; y++)
+        for (int y = 0; y < SPIRAL_SCREEN_HEIGHT; y++)
         {
-            const int index = y * SCREEN_WIDTH + x;
+            const int index = y * SPIRAL_SCREEN_WIDTH + x;
             const unsigned char color = (unsigned char)(image[index] * 255.0f);
-            video_set_pixel(x, y, color);
+            video_set_pixel(2 * x, 2 * y, color);
+            video_set_pixel(2 * x + 1, 2 * y, color);
+            video_set_pixel(2 * x, 2 * y + 1, color);
+            video_set_pixel(2 * x + 1, 2 * y + 1, color);
         }
     }
 }

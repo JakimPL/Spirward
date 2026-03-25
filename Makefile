@@ -15,12 +15,12 @@ CC_LINUX = gcc
 CC_DOS = /home/mateusz/Projects/C++/djgpp/bin/i586-pc-msdosdjgpp-gcc
 
 # Flags
-CFLAGS_COMMON = -O2 -Wall -Wextra
-CFLAGS_LINUX = $(CFLAGS_COMMON) -Ispiral -Ivideo
+CFLAGS_COMMON = -O2 -Wall -Wextra -mno-sse -mfpmath=387 -ffast-math -fno-math-errno
+CFLAGS_LINUX = $(CFLAGS_COMMON) -Ispiral -Ivideo -m32
 CFLAGS_DOS = $(CFLAGS_COMMON) -Ispiral -Ivideo
 
 # Libraries
-LDFLAGS_LINUX = -lSDL2 -lm
+LDFLAGS_LINUX = -lSDL2 -lm 
 LDFLAGS_DOS = -lm
 
 # Default target

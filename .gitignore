@@ -1,6 +1,7 @@
 *.txt
 *.md
 
+*.o
 *.com
 *.COM
 *.exe
