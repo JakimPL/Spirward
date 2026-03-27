@@ -3,16 +3,19 @@
 # Executables
 LINUX_OUT = spiral-linux
 DOS_OUT = spiral.exe
+COM_OUT = spiral.com
 
 # Source files
 MAIN_SRC = main.c
 SPIRAL_SOURCES = $(wildcard spiral/*.c)
 SDL_SRC = video/video_sdl.c
 DOS_SRC = video/video_dos.c
+ASM_SRC = spiral.asm
 
 # Compilers
 CC_LINUX = gcc
 CC_DOS = /home/mateusz/Projects/C++/djgpp/bin/i586-pc-msdosdjgpp-gcc
+ASM = nasm
 
 # Flags
 CFLAGS_COMMON = -O2 -Wall -Wextra -mno-sse -mfpmath=387 -ffast-math -fno-math-errno
@@ -24,7 +27,7 @@ LDFLAGS_LINUX = -lSDL2 -lm
 LDFLAGS_DOS = -lm
 
 # Default target
-.PHONY: all
+.PHONY: all com
 all: linux dos
 
 # Linux build (SDL2)
@@ -43,18 +46,27 @@ $(DOS_OUT): $(MAIN_SRC) $(SPIRAL_SOURCES) $(DOS_SRC)
 	$(CC_DOS) $(CFLAGS_DOS) -o $@ $(MAIN_SRC) $(SPIRAL_SOURCES) $(DOS_SRC) $(LDFLAGS_DOS)
 	@echo "DOS build complete: $(DOS_OUT)"
 
-# Run Linux version
+# COM build (Assembly)
+.PHONY: com
+com: $(COM_OUT)
+
+$(COM_OUT): $(ASM_SRC)
+	$(ASM) -f bin $< -o $@
+	@echo "COM build complete: $(COM_OUT)"
+
+# Run Linux version $(COM_OUT)
 .PHONY: run
 run: linux
 	./$(LINUX_OUT)
 
 # Clean build artifacts
 .PHONY: clean
-clean:
-	rm -f $(LINUX_OUT) $(DOS_OUT)
-	@echo "Cleaned build artifacts"
-
-# Help
+clean:"
+	@echo "  make dos    - Cross-compile for DOS with DJGPP"
+	@echo "  make com    - Assemble .com file with NASM"
+	@echo "  make run    - Build and run Linux version"
+	@echo "  make clean  - Remove build artifacts"
+	@echo "  make all    - Build Linux, DOS, and COM
 .PHONY: help
 help:
 	@echo "Available targets:"

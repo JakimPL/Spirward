@@ -5,7 +5,6 @@
 
 const float spiral_minor_radius = 1.0f;
 const float spiral_major_radius = 2.0f;
-const float v_step = 2.0f * M_PI / V_STEPS;
 const float y_step = (float)SPIRAL_SCREEN_HEIGHT / (float)U_STEPS;
 
 const float v_checkerboard_size = (2.0f * M_PI) / CHECKERBOARD_V_SIZE;
@@ -13,14 +12,16 @@ const float u_checkerboard_size = v_checkerboard_size * CHECKERBOARD_ASPECT_RATI
 const float checkerboard_dark = 0.2f;
 const float checkerboard_light = 0.9f;
 
-const float focal_length = 150.0f;
-float camera_position[3] = {0.0f, -3.0f, -1.0f};
+const float focal_length = 85.0f;
+const float circumference_constant = 2.0f * M_PI * spiral_minor_radius * focal_length;
+float camera_position[3] = {0.0f, -M_PI, 0.0f};
 
 float u_offset = 0.0f;
 float v_offset = 0.0f;
 
 float uv[2];
 float xyz[3];
+float point[3];
 int xy[2];
 
 float depth;
@@ -39,19 +40,21 @@ void calculate_uv_values()
         const float y = 1.0f + i * y_step;
         const float u = camera_position[2] - focal_length * camera_position[1] / y;
         u_values[i] = u;
-        v_steps[i] = V_STEPS - (V_STEPS - 1.0f) * i / (U_STEPS - 1.0f);
+        v_steps[i] = circumference_constant / (u - camera_position[2]);
     }
 }
 
 void project_to_screen()
 {
-    const float point_x = xyz[0] - camera_position[0];
-    const float point_y = xyz[1] - camera_position[1];
-    const float point_z = xyz[2] - camera_position[2];
-    depth = point_x * point_x + point_y * point_y + point_z * point_z;
+    depth = 0.0f;
+    for (int i = 0; i < 3; i++)
+    {
+        point[i] = xyz[i] - camera_position[i];
+        depth += point[i] * point[i];
+    }
 
-    xy[0] = (int)(HALF_SPIRAL_SCREEN_WIDTH + focal_length * point_x / point_z);
-    xy[1] = (int)(focal_length * point_y / point_z);
+    xy[0] = (int)(HALF_SPIRAL_SCREEN_WIDTH + focal_length * point[0] / point[2]);
+    xy[1] = (int)(focal_length * point[1] / point[2]);
 }
 
 void calculate_light()
@@ -76,15 +79,32 @@ bool is_within_bounds()
     return xy[0] >= 0 && xy[0] < SPIRAL_SCREEN_WIDTH && xy[1] >= 0 && xy[1] < SPIRAL_SCREEN_HEIGHT;
 }
 
+int get_index(int x, int y)
+{
+    return y * SPIRAL_SCREEN_WIDTH + x;
+}
+
 void update_depth_buffer()
 {
-    const int index = xy[1] * SPIRAL_SCREEN_WIDTH + xy[0];
+    const int index = get_index(xy[0], xy[1]);
     if (depth < depth_buffer[index])
     {
         calculate_light();
         checkerboard_color();
         depth_buffer[index] = depth;
-        image[index] = light * checkerboard_value;
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                int neighbor_x = xy[0] + dx;
+                int neighbor_y = xy[1] + dy;
+                if (neighbor_x >= 0 && neighbor_x < SPIRAL_SCREEN_WIDTH &&
+                    neighbor_y >= 0 && neighbor_y < SPIRAL_SCREEN_HEIGHT)
+                {
+                    image[get_index(neighbor_x, neighbor_y)] += 0.03f * light * checkerboard_value;
+                }
+            }
+        }
     }
 }
 

@@ -10,8 +10,7 @@
 #define HALF_SPIRAL_SCREEN_WIDTH (SPIRAL_SCREEN_WIDTH / 2)
 #define HALF_SPIRAL_SCREEN_HEIGHT (SPIRAL_SCREEN_HEIGHT / 2)
 
-#define V_STEPS 64
-#define U_STEPS (SPIRAL_SCREEN_HEIGHT * 4)
+#define U_STEPS (SPIRAL_SCREEN_HEIGHT * 2)
 
 #define CHECKERBOARD_V_SIZE 8
 #define CHECKERBOARD_ASPECT_RATIO 1.0f
@@ -27,6 +26,7 @@ extern const float checkerboard_dark;
 extern const float checkerboard_light;
 
 extern const float focal_length;
+extern const float circumference_constant;
 extern float camera_position[3];
 
 extern float u_offset;
@@ -34,6 +34,7 @@ extern float v_offset;
 
 extern float uv[2];
 extern float xyz[3];
+extern float point[3];
 extern int xy[2];
 
 extern float depth;

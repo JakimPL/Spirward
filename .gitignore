@@ -1,10 +1,11 @@
 *.txt
 *.md
 
+*.bin
 *.o
 *.com
-*.COM
 *.exe
+*.COM
 *.EXE
 
 *-linux
