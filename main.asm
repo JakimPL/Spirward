@@ -2,11 +2,11 @@ org 100h
 
 start:
     ; Set video mode 13h (320x200, 256 colors)
-    mov ax, 0x13
-    int 0x10
+    mov ax, VIDEO_MODE_13H
+    int BIOS_VIDEO_INTERRUPT
     
     ; Setup grayscale palette (compact!)
-    mov dx, 0x03C8      ; palette index port
+    mov dx, PALETTE_INDEX_PORT
     xor al, al
     out dx, al          ; start at color 0
     inc dx              ; 0x3C9 - palette data port
@@ -22,16 +22,15 @@ palette_loop:
     inc bx
     loop palette_loop
     
-    ; Set ES to video memory segment
-    push 0xA000
+    push VIDEO_MEMORY_SEGMENT
     pop es
-
+  
 main_loop:
 .reset_video_memory:
     xor di, di
 
-.fill:
-    mov ax, 0x4040
+.clear_buffer:
+    xor ax, ax
     mov cx, 0x7D00
     rep stosw 
 
@@ -47,3 +46,35 @@ main_loop:
     mov ax, 0x03
     int 0x10
     ret
+
+U_STEPS equ 0xC8
+VIDEO_MODE_13H equ 0x13
+BIOS_VIDEO_INTERRUPT equ 0x10
+VIDEO_MEMORY_SEGMENT equ 0xA000
+PALETTE_INDEX_PORT equ 0x03C8
+
+
+section .data
+two_pi: dq 6.28318530717958647692
+half: dd 0.5
+two: db 2
+focal_length: db 85
+circumference_constant: dd 534.07073974609375
+v_checkerboard_size: dd 0.785398185253143311
+dark_reciprocal: db 5
+
+section .bss
+light: resd 1
+depth: resd 1
+x: resd 1
+y: resd 1
+z: resd 1
+px: resb 1
+py: resb 1
+u: resd 1
+v: resd 1
+u_offset: resd 1
+v_offset: resd 1
+
+u_values: resd U_STEPS
+v_steps: resd U_STEPS

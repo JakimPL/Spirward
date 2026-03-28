@@ -1,3 +1,5 @@
+.vscode/
+
 *.txt
 *.md
 
@@ -9,3 +11,5 @@
 *.EXE
 
 *-linux
+debug
+.spiral.*

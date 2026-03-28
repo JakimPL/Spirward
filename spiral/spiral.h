@@ -13,17 +13,6 @@
 #define U_STEPS (SPIRAL_SCREEN_HEIGHT * 2)
 
 #define CHECKERBOARD_V_SIZE 8
-#define CHECKERBOARD_ASPECT_RATIO 1.0f
-
-extern const float spiral_minor_radius;
-extern const float spiral_major_radius;
-extern const float v_step;
-extern const float y_step;
-
-extern const float v_checkerboard_size;
-extern const float u_checkerboard_size;
-extern const float checkerboard_dark;
-extern const float checkerboard_light;
 
 extern const float focal_length;
 extern const float circumference_constant;
@@ -47,14 +36,10 @@ extern float u_values[U_STEPS];
 extern float v_steps[U_STEPS];
 
 void calculate_uv_values();
-void project_to_screen();
 void calculate_light();
-bool checkerboard_pattern();
-bool is_within_bounds();
-void update_depth_buffer();
+void checkerboard_color(float u, float v);
+void update_depth_buffer(float u, float v, int px, int py, float depth);
 void clear_buffers();
-void compute_spiral_point(float u, float v);
-void draw_spiral();
 void draw();
 
 #endif

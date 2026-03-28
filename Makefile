@@ -4,6 +4,7 @@
 LINUX_OUT = spiral-linux
 DOS_OUT = spiral.exe
 COM_OUT = spiral.com
+DEBUG_OUT = debug
 
 # Source files
 MAIN_SRC = main.c
@@ -16,6 +17,7 @@ ASM_SRC = spiral.asm
 CC_LINUX = gcc
 CC_DOS = /home/mateusz/Projects/C++/djgpp/bin/i586-pc-msdosdjgpp-gcc
 ASM = nasm
+OBJCONV = wine objconv.exe
 
 # Flags
 CFLAGS_COMMON = -O2 -Wall -Wextra -mno-sse -mfpmath=387 -ffast-math -fno-math-errno
@@ -27,8 +29,8 @@ LDFLAGS_LINUX = -lSDL2 -lm
 LDFLAGS_DOS = -lm
 
 # Default target
-.PHONY: all com
-all: linux dos
+.PHONY: all
+all: linux dos com
 
 # Linux build (SDL2)
 .PHONY: linux
@@ -54,24 +56,44 @@ $(COM_OUT): $(ASM_SRC)
 	$(ASM) -f bin $< -o $@
 	@echo "COM build complete: $(COM_OUT)"
 
-# Run Linux version $(COM_OUT)
+# Debug build (with debug symbols)
+.PHONY: debug
+debug: $(DEBUG_OUT)
+
+$(DEBUG_OUT): debug.c core/spiral.asm
+	$(ASM) -f elf32 -g -F dwarf core/spiral.asm -o core/spiral.o
+	$(CC_LINUX) $(CFLAGS_LINUX) -g -o $@ debug.c core/spiral.o -lm
+	@echo "Debug build complete: $(DEBUG_OUT)"
+
+# Disassemble spiral.c to NASM format
+.PHONY: desasm
+desasm: .spiral.o
+	$(OBJCONV) -fnasm .spiral.o
+	@echo "Disassembly complete"
+
+.spiral.o: spiral/spiral.c spiral/spiral.h
+	$(CC_LINUX) $(CFLAGS_COMMON) -m32 -c -o $@ $<
+	@echo "Compiled spiral.c to .spiral.o"
+
+# Run Linux version
 .PHONY: run
 run: linux
 	./$(LINUX_OUT)
 
 # Clean build artifacts
 .PHONY: clean
-clean:"
-	@echo "  make dos    - Cross-compile for DOS with DJGPP"
-	@echo "  make com    - Assemble .com file with NASM"
-	@echo "  make run    - Build and run Linux version"
-	@echo "  make clean  - Remove build artifacts"
-	@echo "  make all    - Build Linux, DOS, and COM
+clean:
+	rm -f $(LINUX_OUT) $(DOS_OUT) $(COM_OUT) $(DEBUG_OUT) .spiral.o core/spiral.o
+	@echo "Cleaned build artifacts"
+
+# Help
 .PHONY: help
 help:
 	@echo "Available targets:"
-	@echo "  make linux  - Build for Linux with SDL2 (default)"
+	@echo "  make linux  - Build for Linux with SDL2"
 	@echo "  make dos    - Cross-compile for DOS with DJGPP"
+	@echo "  make com    - Assemble .com file with NASM"
+	@echo "  make debug  - Build debug.c with debug symbols"
 	@echo "  make run    - Build and run Linux version"
 	@echo "  make clean  - Remove build artifacts"
-	@echo "  make all    - Build both Linux and DOS versions"
+	@echo "  make all    - Build Linux, DOS, and COM versions"
