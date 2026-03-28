@@ -34,13 +34,11 @@ void frame()
 
 int main(void)
 {
-
     if (video_init() != 0)
     {
         return 1;
     }
 
-    calculate_uv_values();
     frame();
 
 #ifdef __DJGPP__

@@ -42,7 +42,8 @@ float u_values[U_STEPS];
 int v_steps[U_STEPS];
 
 extern void calculate_uv_values();
-extern void calculate_initial_spiral_point();
+extern void calculate_initial_point();
+extern void increment_point();
 
 int get_index(int px, int py)
 {
@@ -64,37 +65,15 @@ int main()
     for (i = 1; i <= U_STEPS; ++i)
     {
         calculate_uv_values();
-        calculate_initial_spiral_point();
-        printf("u: %f, v_step: %f\n", u, v_step);
-        v_step = two_pi / i;
-        u = v_step * focal_length;
-        printf("u: %f, v_step: %f\n", u, v_step);
-        printf("px: %f, py: %f\n", px, py);
-        v = 0.0f;
-        const float u_angle = u + u_offset;
-        const float cos_u = cosf(u_angle);
-        const float sin_u = sinf(u_angle);
-        float x = 2.0f * sin_u;
-        float y = 2.0f * cos_u;
-        float px = HALF_SPIRAL_SCREEN_WIDTH + x / v_step;
-        float py = HALF_SPIRAL_SCREEN_HEIGHT + y / v_step;
-
-        printf("px: %f, py: %f\n", px, py);
+        calculate_initial_point();
         for (int v_step_index = 0; v_step_index < i; ++v_step_index)
         {
-            const float v_angle = v + v_offset;
-            const float cos_v = cosf(v_angle);
-            const float sin_v = sinf(v_angle);
-
-            px -= cos_v;
-            py -= sin_v;
-            // depth = x * x + y * y + u * u;
-
             if (px >= 0 && px < SPIRAL_SCREEN_WIDTH && py >= 0 && py < SPIRAL_SCREEN_HEIGHT)
             {
                 update_depth_buffer(u, v, px, py, depth);
             }
-            v += v_step;
+
+            increment_point();
         }
     }
 

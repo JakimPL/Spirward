@@ -11,7 +11,10 @@ MAIN_SRC = main.c
 SPIRAL_SOURCES = $(wildcard spiral/*.c)
 SDL_SRC = video/video_sdl.c
 DOS_SRC = video/video_dos.c
-ASM_SRC = spiral.asm
+ASM_SRC = core/spiral.asm
+
+# Object files
+SPIRAL_ASM_OBJ_LINUX = spiral.o
 
 # Compilers
 CC_LINUX = gcc
@@ -20,7 +23,7 @@ ASM = nasm
 OBJCONV = wine objconv.exe
 
 # Flags
-CFLAGS_COMMON = -O2 -Wall -Wextra -mno-sse -mfpmath=387 -ffast-math -fno-math-errno
+CFLAGS_COMMON = -O2 -Wall -Wextra -g -mno-sse -mfpmath=387 -ffast-math -fno-math-errno
 CFLAGS_LINUX = $(CFLAGS_COMMON) -Ispiral -Ivideo -m32
 CFLAGS_DOS = $(CFLAGS_COMMON) -Ispiral -Ivideo
 
@@ -32,12 +35,16 @@ LDFLAGS_DOS = -lm
 .PHONY: all
 all: linux dos com
 
+# Assembly object file rule
+$(SPIRAL_ASM_OBJ_LINUX): $(ASM_SRC)
+	$(ASM) -f elf32 -g -F dwarf -o $@ $<
+
 # Linux build (SDL2)
 .PHONY: linux
 linux: $(LINUX_OUT)
 
-$(LINUX_OUT): $(MAIN_SRC) $(SPIRAL_SOURCES) $(SDL_SRC)
-	$(CC_LINUX) $(CFLAGS_LINUX) -o $@ $(MAIN_SRC) $(SPIRAL_SOURCES) $(SDL_SRC) $(LDFLAGS_LINUX)
+$(LINUX_OUT): $(MAIN_SRC) $(SPIRAL_SOURCES) $(SDL_SRC) $(SPIRAL_ASM_OBJ_LINUX)
+	$(CC_LINUX) $(CFLAGS_LINUX) -o $@ $(MAIN_SRC) $(SPIRAL_SOURCES) $(SDL_SRC) $(SPIRAL_ASM_OBJ_LINUX) $(LDFLAGS_LINUX)
 	@echo "Linux build complete: $(LINUX_OUT)"
 
 # DOS build (DJGPP)
@@ -53,16 +60,16 @@ $(DOS_OUT): $(MAIN_SRC) $(SPIRAL_SOURCES) $(DOS_SRC)
 com: $(COM_OUT)
 
 $(COM_OUT): $(ASM_SRC)
-	$(ASM) -f bin $< -o $@
+	$(ASM) -f bin -g -F dwarf $< -o $@
 	@echo "COM build complete: $(COM_OUT)"
 
 # Debug build (with debug symbols)
 .PHONY: debug
 debug: $(DEBUG_OUT)
 
-$(DEBUG_OUT): debug.c core/spiral.asm
-	$(ASM) -f elf32 -g -F dwarf core/spiral.asm -o core/spiral.o
-	$(CC_LINUX) $(CFLAGS_LINUX) -g -o $@ debug.c core/spiral.o -lm
+$(DEBUG_OUT): debug.c $(ASM_SRC)
+	$(ASM) -f elf32 -g -F dwarf $(ASM_SRC) -o $(SPIRAL_ASM_OBJ_LINUX)
+	$(CC_LINUX) $(CFLAGS_LINUX) -g -o $@ debug.c $(SPIRAL_ASM_OBJ_LINUX) -lm
 	@echo "Debug build complete: $(DEBUG_OUT)"
 
 # Disassemble spiral.c to NASM format
@@ -83,7 +90,7 @@ run: linux
 # Clean build artifacts
 .PHONY: clean
 clean:
-	rm -f $(LINUX_OUT) $(DOS_OUT) $(COM_OUT) $(DEBUG_OUT) .spiral.o core/spiral.o
+	rm -f $(LINUX_OUT) $(DOS_OUT) $(COM_OUT) $(DEBUG_OUT) .spiral.o core/spiral.o $(SPIRAL_ASM_OBJ_LINUX)
 	@echo "Cleaned build artifacts"
 
 # Help
