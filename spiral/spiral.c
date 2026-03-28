@@ -17,6 +17,7 @@ const float checkerboard_dark = 0.2f;
 const float checkerboard_light = 0.9f;
 const float focal_length = 85.0f;
 const float circumference_constant = two_pi * focal_length;
+const float attenuation = 0.1f;
 
 float u_offset = 0.0f;
 float v_offset = 0.0f;
@@ -33,7 +34,7 @@ float checkerboard_value;
 float image[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
 float depth_buffer[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
 float u_values[U_STEPS];
-float v_steps[U_STEPS];
+int v_steps[U_STEPS];
 
 void calculate_uv_values()
 {
@@ -42,14 +43,14 @@ void calculate_uv_values()
     {
         const float u = circumference_constant / y;
         u_values[i] = u;
-        v_steps[i] = circumference_constant / u;
+        v_steps[i] = (int)y;
         y += 1;
     }
 }
 
 void calculate_light()
 {
-    light = one / (one + 0.02f * depth);
+    light = one / (one + attenuation * depth);
 }
 
 void checkerboard_color(float u, float v)
@@ -88,34 +89,37 @@ void clear_buffers()
 
 void loop()
 {
-    for (int u_step_index = 0; u_step_index < U_STEPS; ++u_step_index)
+    for (int i = 1; i <= U_STEPS; ++i)
     {
-        const float u = u_values[u_step_index];
-        const int v_steps_for_u = v_steps[u_step_index];
-        const float v_step = two_pi / v_steps_for_u;
+        const float v_step = two_pi / i;
+        const float u = v_step * focal_length;
         float v = 0.0f;
-        for (int v_step_index = 0; v_step_index < v_steps_for_u; ++v_step_index)
-        {
-            v += v_step;
 
+        const float u_angle = u + u_offset;
+        depth = u * u; //  + sinf(u_angle + v);
+
+        const float cos_u = cosf(u_angle);
+        const float sin_u = sinf(u_angle);
+        float x = 2.0f * sin_u;
+        float y = 2.0f * cos_u;
+        float px = HALF_SPIRAL_SCREEN_WIDTH + x / v_step;
+        float py = HALF_SPIRAL_SCREEN_HEIGHT + y / v_step;
+
+        for (int v_step_index = 0; v_step_index < i; ++v_step_index)
+        {
             const float v_angle = v + v_offset;
-            const float u_angle = u + u_offset;
-            const float cos_u = cosf(u_angle);
-            const float sin_u = sinf(u_angle);
             const float cos_v = cosf(v_angle);
             const float sin_v = sinf(v_angle);
 
-            const float x = two * sin_u + cos_v;
-            const float y = two * cos_u + sin_v + y_camera;
-
-            const int px = (int)(HALF_SPIRAL_SCREEN_WIDTH + focal_length * x / u);
-            const int py = (int)(focal_length * y / u);
-            const float depth = x * x + y * y + u * u;
+            px -= cos_v;
+            py -= sin_v;
+            // depth = x * x + y * y + u * u;
 
             if (px >= 0 && px < SPIRAL_SCREEN_WIDTH && py >= 0 && py < SPIRAL_SCREEN_HEIGHT)
             {
                 update_depth_buffer(u, v, px, py, depth);
             }
+            v += v_step;
         }
     }
 }

@@ -24,6 +24,10 @@ palette_loop:
     
     push VIDEO_MEMORY_SEGMENT
     pop es
+
+.calculate_uv_values:
+    call calculate_uv_values
+
   
 main_loop:
 .reset_video_memory:

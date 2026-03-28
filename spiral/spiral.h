@@ -33,7 +33,7 @@ extern float checkerboard_value;
 extern float image[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
 extern float depth_buffer[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
 extern float u_values[U_STEPS];
-extern float v_steps[U_STEPS];
+extern int v_steps[U_STEPS];
 
 void calculate_uv_values();
 void calculate_light();
