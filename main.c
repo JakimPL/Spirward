@@ -28,8 +28,7 @@ void frame()
     draw();
     render();
     video_present();
-    v_offset += 0.01f;
-    u_offset += 0.015f;
+    increment_offset();
 }
 
 int main(void)

@@ -3,45 +3,15 @@
 
 #include "spiral.h"
 
-const short half_spiral_screen_width = HALF_SPIRAL_SCREEN_WIDTH;
-const short half_spiral_screen_height = HALF_SPIRAL_SCREEN_HEIGHT;
-
-const float two_pi = 2.0f * M_PI;
-const float y_camera = 1.424f;
-
-const float v_checkerboard_size = two_pi / CHECKERBOARD_V_SIZE;
-const float u_checkerboard_size = v_checkerboard_size;
-
-const float checkerboard_dark = 0.2f;
-const float checkerboard_light = 0.9f;
-const float focal_length = 85.0f;
-const float circumference_constant = two_pi * focal_length;
-const float attenuation = 0.2f;
-
-float u_offset = 0.0f;
-float v_offset = 0.0f;
-
-float v_step;
-short i;
-
-float u;
-float v;
-float px;
-float py;
-
-float depth;
-float light;
-float checkerboard_value;
-
 float image[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
 float depth_buffer[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
 
 void checkerboard_color(float u, float v)
 {
-    const int u_index = (int)(u / u_checkerboard_size);
-    const int v_index = (int)(v / v_checkerboard_size);
+    const int u_index = (int)(u / checkerboard_size);
+    const int v_index = (int)(v / checkerboard_size);
     const bool pattern = (u_index + v_index) % 2 == 0;
-    checkerboard_value = pattern ? checkerboard_light : checkerboard_dark;
+    checkerboard_value = pattern ? 1.0f : checkerboard_dark;
 }
 
 int get_index(int px, int py)
