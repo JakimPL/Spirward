@@ -5,10 +5,8 @@
 static SDL_Window *window = NULL;
 static SDL_Surface *surface = NULL;
 
-int video_init(void)
-{
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
-    {
+int video_init(void) {
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         return -1;
     }
 
@@ -18,17 +16,16 @@ int video_init(void)
         SDL_WINDOWPOS_CENTERED,
         SCREEN_WIDTH * 2, /* 2x scaling for visibility */
         SCREEN_HEIGHT * 2,
-        SDL_WINDOW_SHOWN);
+        SDL_WINDOW_SHOWN
+    );
 
-    if (!window)
-    {
+    if (!window) {
         SDL_Quit();
         return -1;
     }
 
     surface = SDL_GetWindowSurface(window);
-    if (!surface)
-    {
+    if (!surface) {
         SDL_DestroyWindow(window);
         SDL_Quit();
         return -1;
@@ -40,10 +37,8 @@ int video_init(void)
     return 0;
 }
 
-void video_set_pixel(int x, int y, unsigned char color)
-{
-    if (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT)
-    {
+void video_set_pixel(int x, int y, unsigned char color) {
+    if (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT) {
         /* Scale 2x for better visibility */
         SDL_Rect rect = {x * 2, y * 2, 2, 2};
         Uint32 pixel = SDL_MapRGB(surface->format, color, color, color);
@@ -51,15 +46,12 @@ void video_set_pixel(int x, int y, unsigned char color)
     }
 }
 
-void video_present(void)
-{
+void video_present(void) {
     SDL_UpdateWindowSurface(window);
 }
 
-void video_cleanup(void)
-{
-    if (window)
-    {
+void video_cleanup(void) {
+    if (window) {
         SDL_DestroyWindow(window);
     }
     SDL_Quit();

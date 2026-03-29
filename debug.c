@@ -45,31 +45,24 @@ extern void calculate_uv_values();
 extern void calculate_initial_point();
 extern void increment_point();
 
-int get_index(int px, int py)
-{
+int get_index(int px, int py) {
     return py * SPIRAL_SCREEN_WIDTH + px;
 }
 
-void update_depth_buffer(float u, float v, int px, int py, float depth)
-{
+void update_depth_buffer(float u, float v, int px, int py, float depth) {
     const int index = get_index(px, py);
-    if (depth < depth_buffer[index])
-    {
+    if (depth < depth_buffer[index]) {
         depth_buffer[index] = depth;
         image[index] = light * checkerboard_value;
     }
 }
 
-int main()
-{
-    for (i = 1; i <= U_STEPS; ++i)
-    {
+int main() {
+    for (i = 1; i <= U_STEPS; ++i) {
         calculate_uv_values();
         calculate_initial_point();
-        for (int v_step_index = 0; v_step_index < i; ++v_step_index)
-        {
-            if (px >= 0 && px < SPIRAL_SCREEN_WIDTH && py >= 0 && py < SPIRAL_SCREEN_HEIGHT)
-            {
+        for (int v_step_index = 0; v_step_index < i; ++v_step_index) {
+            if (px >= 0 && px < SPIRAL_SCREEN_WIDTH && py >= 0 && py < SPIRAL_SCREEN_HEIGHT) {
                 update_depth_buffer(u, v, px, py, depth);
             }
 
