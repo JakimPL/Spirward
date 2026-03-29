@@ -14,9 +14,9 @@ void update_depth_buffer() {
 
     get_index();
     if (depth < depth_buffer[array_index]) {
-        calculate_checkerboard_value();
+        calculate_color();
         depth_buffer[array_index] = depth;
-        image[array_index] = light * checkerboard_value;
+        image[array_index] = color;
     }
 }
 

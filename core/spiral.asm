@@ -4,7 +4,7 @@
     global calculate_uv_values
     global calculate_initial_point
     global increment_point
-    global calculate_checkerboard_value
+    global calculate_color
     global get_index
 
     global focal_length
@@ -14,7 +14,7 @@
     global two_pi
     global half_spiral_screen_width
     global half_spiral_screen_height
-    global checkerboard_value
+    global color
     global light
     global depth
     global px
@@ -70,6 +70,10 @@ get_index:
     fimul word [screen_width]
     faddp
     fistp word [array_index]
+    ret
+
+update_image:
+    call calculate_color
     ret
 
 increment_offset:
@@ -137,7 +141,7 @@ increment_point:
     fstp dword [px]
     ret
 
-calculate_checkerboard_value:
+calculate_color:
     push ax
 .load_uv:
     fld dword [u]
@@ -151,11 +155,12 @@ calculate_checkerboard_value:
     mov ax, [u_int]
     xor ax, [v_int]
     and ax, 0x01
-    mov [checkerboard_value], ax
+    mov [color], ax
 .apply_color:
-    fild word [checkerboard_value]
+    fild word [color]
     fadd dword [checkerboard_dark]
-    fstp dword [checkerboard_value]
+    fmul dword [light]
+    fstp dword [color]
     pop ax
     ret
 
@@ -164,7 +169,7 @@ calculate_checkerboard_value:
 focal_length:
     dd 85.0
 attenuation:
-    dd 0.25
+    dd 0.3
 checkerboard_dark:
     dd 0.2
 checkerboard_size:
@@ -180,7 +185,7 @@ half_spiral_screen_height:
     dw HALF_SCREEN_HEIGHT
 
     section .bss
-checkerboard_value:
+color:
     resd 1
 light:
     resd 1

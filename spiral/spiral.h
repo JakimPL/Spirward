@@ -15,10 +15,10 @@
 extern const float focal_length;
 extern const float attenuation;
 
+extern float color;
 extern float depth;
 extern float light;
 extern float checkerboard_size;
-extern float checkerboard_value;
 extern float checkerboard_dark;
 
 extern float v_step;
@@ -39,7 +39,7 @@ extern void calculate_uv_values();
 extern void calculate_initial_point();
 extern void increment_point();
 extern void increment_offset();
-extern void calculate_checkerboard_value();
+extern void calculate_color();
 extern void get_index();
 extern void do_u_step();
 extern void do_v_step();
