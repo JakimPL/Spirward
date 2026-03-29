@@ -10,7 +10,12 @@ int get_index(int px, int py) {
     return py * SPIRAL_SCREEN_WIDTH + px;
 }
 
-void update_depth_buffer(float u, float v, int px, int py, float depth) {
+void update_depth_buffer() {
+    if (!(px >= 0.0f && px < SPIRAL_SCREEN_WIDTH && py >= 0.0f &&
+          py < SPIRAL_SCREEN_HEIGHT)) {
+        return;
+    }
+
     const int index = get_index(px, py);
     if (depth < depth_buffer[index]) {
         calculate_checkerboard_value();
@@ -26,23 +31,23 @@ void clear_buffers() {
     }
 }
 
-void line() {
+void do_v_step() {
+    update_depth_buffer();
+    increment_point();
+}
+
+void do_u_step() {
     calculate_uv_values();
     calculate_initial_point();
 
     for (int k = 0; k < i; ++k) {
-        if (px >= 0.0f && px < SPIRAL_SCREEN_WIDTH && py >= 0.0f &&
-            py < SPIRAL_SCREEN_HEIGHT) {
-            update_depth_buffer(u, v, px, py, depth);
-        }
-
-        increment_point();
+        do_v_step();
     }
 }
 
 void loop() {
     for (i = 1; i <= U_STEPS; ++i) {
-        line();
+        do_u_step();
     }
 }
 

@@ -39,8 +39,10 @@ extern void calculate_initial_point();
 extern void increment_point();
 extern void increment_offset();
 extern void calculate_checkerboard_value();
+extern void do_u_step();
+extern void do_v_step();
 
-void update_depth_buffer(float u, float v, int px, int py, float depth);
+void update_depth_buffer();
 void clear_buffers();
 void draw();
 

@@ -1,3 +1,5 @@
+; global do_u_step
+; global do_v_step
     global increment_offset
     global calculate_uv_values
     global calculate_initial_point
@@ -26,6 +28,16 @@
     BUFFER_SIZE equ U_STEPS * 4
 
     section .text
+
+do_u_step:
+; call calculate_uv_values
+; call calculate_initial_point
+    ret
+
+do_v_step:
+; call update_depth_buffer
+; call increment_point
+    ret
 
 increment_offset:
     fld1
@@ -94,17 +106,20 @@ increment_point:
 
 calculate_checkerboard_value:
     push ax
+.load_uv:
     fld dword [u]
     fdiv dword [checkerboard_size]
     fistp word [u_int]
     fld dword [v]
     fdiv dword [checkerboard_size]
     fistp word [v_int]
+.apply_pattern:
     xor ax, ax
     mov ax, [u_int]
     xor ax, [v_int]
     and ax, 1
     mov [checkerboard_value], ax
+.apply_color:
     fild word [checkerboard_value]
     fadd dword [checkerboard_dark]
     fstp dword [checkerboard_value]
