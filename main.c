@@ -11,7 +11,7 @@ void render() {
     for (int x = 0; x < SPIRAL_SCREEN_WIDTH; x++) {
         for (int y = 0; y < SPIRAL_SCREEN_HEIGHT; y++) {
             const int index = y * SPIRAL_SCREEN_WIDTH + x;
-            const unsigned char color = (unsigned char) (image[index] * 255.0f);
+            const unsigned char color = image[index];
             video_set_pixel(2 * x, 2 * y, color);
             video_set_pixel(2 * x + 1, 2 * y, color);
             video_set_pixel(2 * x, 2 * y + 1, color);

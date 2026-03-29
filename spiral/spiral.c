@@ -3,26 +3,18 @@
 
 #include "spiral.h"
 
-float image[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
-float depth_buffer[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
-
 void update_depth_buffer() {
     if (!(px >= 0.0f && px < SPIRAL_SCREEN_WIDTH && py >= 0.0f &&
           py < SPIRAL_SCREEN_HEIGHT)) {
         return;
     }
 
-    get_index();
-    if (depth < depth_buffer[array_index]) {
-        calculate_color();
-        depth_buffer[array_index] = depth;
-        image[array_index] = color;
-    }
+    update_image();
 }
 
 void clear_buffers() {
     for (int array_index = 0; array_index < SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT; array_index++) {
-        image[array_index] = 0.0f;
+        image[array_index] = 0;
         depth_buffer[array_index] = 1e30f;
     }
 }

@@ -15,7 +15,7 @@
 extern const float focal_length;
 extern const float attenuation;
 
-extern float color;
+extern short color;
 extern float depth;
 extern float light;
 extern float checkerboard_size;
@@ -32,17 +32,17 @@ extern float py;
 extern unsigned short array_index;
 extern float offset;
 
-extern float image[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
+extern unsigned char image[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
 extern float depth_buffer[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
 
 extern void calculate_uv_values();
 extern void calculate_initial_point();
 extern void increment_point();
 extern void increment_offset();
-extern void calculate_color();
 extern void get_index();
 extern void do_u_step();
 extern void do_v_step();
+extern void update_image();
 
 void update_depth_buffer();
 void clear_buffers();

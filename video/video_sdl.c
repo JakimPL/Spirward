@@ -39,7 +39,6 @@ int video_init(void) {
 
 void video_set_pixel(int x, int y, unsigned char color) {
     if (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT) {
-        /* Scale 2x for better visibility */
         SDL_Rect rect = {x * 2, y * 2, 2, 2};
         Uint32 pixel = SDL_MapRGB(surface->format, color, color, color);
         SDL_FillRect(surface, &rect, pixel);

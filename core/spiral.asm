@@ -4,8 +4,7 @@
     global calculate_uv_values
     global calculate_initial_point
     global increment_point
-    global calculate_color
-    global get_index
+    global update_image
 
     global focal_length
     global attenuation
@@ -25,14 +24,16 @@
     global offset
     global i
     global array_index
-
-    U_STEPS equ 200
-    BUFFER_SIZE equ U_STEPS * 4
+    global depth_buffer
+    global image
 
     SCREEN_WIDTH equ 160
     SCREEN_HEIGHT equ 100
     HALF_SCREEN_WIDTH equ SCREEN_WIDTH / 2
     HALF_SCREEN_HEIGHT equ SCREEN_HEIGHT / 2
+
+    U_STEPS equ SCREEN_HEIGHT * 2
+    BUFFER_SIZE equ SCREEN_WIDTH * SCREEN_HEIGHT
 
     section .text
 
@@ -62,7 +63,9 @@ do_v_step:
 ; call increment_point
     ret
 
-get_index:
+update_image:
+    pusha
+.get_index:
     fld dword [px]
     frndint
     fld dword [py]
@@ -70,10 +73,37 @@ get_index:
     fimul word [screen_width]
     faddp
     fistp word [array_index]
-    ret
-
-update_image:
-    call calculate_color
+.check_depth:
+    xor ebx, ebx
+    mov bx, [array_index]
+    fld dword [depth]
+    fcomp dword [depth_buffer + 4 * ebx]
+    fstsw ax
+    sahf
+    jae .exit
+.calculate_color:
+.load_uv:
+    fld dword [u]
+    fdiv dword [checkerboard_size]
+    fistp word [u_int]
+    fld dword [v]
+    fdiv dword [checkerboard_size]
+    fistp word [v_int]
+.apply_pattern:
+    xor cx, cx
+    mov cx, [u_int]
+    xor cx, [v_int]
+    and cx, 0x01
+    mov [color], cx
+.apply_lighting:
+    fild word [color]
+    fadd dword [checkerboard_dark]
+    fmul dword [light]
+    fistp word [color]
+    mov cl, [color]
+    mov [image + ebx], cl
+.exit:
+    popa
     ret
 
 increment_offset:
@@ -103,7 +133,7 @@ calculate_uv_values:
     fmul dword [attenuation]
     fld1
     faddp
-    fld1
+    fld dword [w255]
     fdivr
     fstp dword [light]
     ret
@@ -141,31 +171,7 @@ increment_point:
     fstp dword [px]
     ret
 
-calculate_color:
-    push ax
-.load_uv:
-    fld dword [u]
-    fdiv dword [checkerboard_size]
-    fistp word [u_int]
-    fld dword [v]
-    fdiv dword [checkerboard_size]
-    fistp word [v_int]
-.apply_pattern:
-    xor ax, ax
-    mov ax, [u_int]
-    xor ax, [v_int]
-    and ax, 0x01
-    mov [color], ax
-.apply_color:
-    fild word [color]
-    fadd dword [checkerboard_dark]
-    fmul dword [light]
-    fstp dword [color]
-    pop ax
-    ret
-
     section .data
-
 focal_length:
     dd 85.0
 attenuation:
@@ -175,6 +181,8 @@ checkerboard_dark:
 checkerboard_size:
     dd 0.785398185253143311
 
+w255:
+    dd 255.0
 two_pi:
     dd 6.28318530717958647692
 screen_width:
@@ -186,7 +194,7 @@ half_spiral_screen_height:
 
     section .bss
 color:
-    resd 1
+    resw 1
 light:
     resd 1
 depth:
@@ -212,3 +220,7 @@ u_int:
 v_int:
     resw 1
 
+depth_buffer:
+    resd BUFFER_SIZE
+image:
+    resb BUFFER_SIZE
