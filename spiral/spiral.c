@@ -4,11 +4,6 @@
 #include "spiral.h"
 
 void update_depth_buffer() {
-    if (!(px >= 0.0f && px < SPIRAL_SCREEN_WIDTH && py >= 0.0f &&
-          py < SPIRAL_SCREEN_HEIGHT)) {
-        return;
-    }
-
     update_image();
 }
 

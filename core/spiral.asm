@@ -73,6 +73,12 @@ update_image:
     fimul word [screen_width]
     faddp
     fistp word [array_index]
+.check_bounds:
+    mov ax, [array_index]
+    cmp ax, 0
+    jl .exit
+    cmp ax, BUFFER_SIZE - 1
+    jg .exit
 .check_depth:
     xor ebx, ebx
     mov bx, [array_index]
@@ -187,6 +193,8 @@ two_pi:
     dd 6.28318530717958647692
 screen_width:
     dw SCREEN_WIDTH
+screen_height:
+    dw SCREEN_HEIGHT
 half_spiral_screen_width:
     dw HALF_SCREEN_WIDTH
 half_spiral_screen_height:
