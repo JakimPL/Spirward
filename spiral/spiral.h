@@ -29,6 +29,7 @@ extern float v;
 extern float px;
 extern float py;
 
+extern unsigned short array_index;
 extern float offset;
 
 extern float image[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
@@ -39,6 +40,7 @@ extern void calculate_initial_point();
 extern void increment_point();
 extern void increment_offset();
 extern void calculate_checkerboard_value();
+extern void get_index();
 extern void do_u_step();
 extern void do_v_step();
 

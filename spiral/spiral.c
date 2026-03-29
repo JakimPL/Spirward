@@ -6,28 +6,24 @@
 float image[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
 float depth_buffer[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
 
-int get_index(int px, int py) {
-    return py * SPIRAL_SCREEN_WIDTH + px;
-}
-
 void update_depth_buffer() {
     if (!(px >= 0.0f && px < SPIRAL_SCREEN_WIDTH && py >= 0.0f &&
           py < SPIRAL_SCREEN_HEIGHT)) {
         return;
     }
 
-    const int index = get_index(px, py);
-    if (depth < depth_buffer[index]) {
+    get_index();
+    if (depth < depth_buffer[array_index]) {
         calculate_checkerboard_value();
-        depth_buffer[index] = depth;
-        image[index] = light * checkerboard_value;
+        depth_buffer[array_index] = depth;
+        image[array_index] = light * checkerboard_value;
     }
 }
 
 void clear_buffers() {
-    for (int i = 0; i < SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT; i++) {
-        image[i] = 0.0f;
-        depth_buffer[i] = 1e30f;
+    for (int array_index = 0; array_index < SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT; array_index++) {
+        image[array_index] = 0.0f;
+        depth_buffer[array_index] = 1e30f;
     }
 }
 

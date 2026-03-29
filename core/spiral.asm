@@ -5,6 +5,7 @@
     global calculate_initial_point
     global increment_point
     global calculate_checkerboard_value
+    global get_index
 
     global focal_length
     global attenuation
@@ -23,20 +24,52 @@
     global v_step
     global offset
     global i
+    global array_index
 
     U_STEPS equ 200
     BUFFER_SIZE equ U_STEPS * 4
 
+    SCREEN_WIDTH equ 160
+    SCREEN_HEIGHT equ 100
+    HALF_SCREEN_WIDTH equ SCREEN_WIDTH / 2
+    HALF_SCREEN_HEIGHT equ SCREEN_HEIGHT / 2
+
     section .text
 
+loop:
+    mov word [i], 0x01
+.loop_start:
+    cmp word [i], U_STEPS
+    jg .loop_end
+    call do_u_step
+    inc word [i]
+    jmp .loop_start
+.loop_end:
+    ret
+
 do_u_step:
-; call calculate_uv_values
-; call calculate_initial_point
+    call calculate_uv_values
+    call calculate_initial_point
+    mov cl, byte [i]
+.v_loop:
+    call do_v_step
+    loop .v_loop
+.v_loop_end:
     ret
 
 do_v_step:
 ; call update_depth_buffer
 ; call increment_point
+    ret
+
+get_index:
+    fld dword [px]
+    frndint
+    fld dword [py]
+    frndint
+    fimul word [screen_width]
+    faddp
+    fistp word [array_index]
     ret
 
 increment_offset:
@@ -117,7 +150,7 @@ calculate_checkerboard_value:
     xor ax, ax
     mov ax, [u_int]
     xor ax, [v_int]
-    and ax, 1
+    and ax, 0x01
     mov [checkerboard_value], ax
 .apply_color:
     fild word [checkerboard_value]
@@ -127,6 +160,7 @@ calculate_checkerboard_value:
     ret
 
     section .data
+
 focal_length:
     dd 85.0
 attenuation:
@@ -138,10 +172,12 @@ checkerboard_size:
 
 two_pi:
     dd 6.28318530717958647692
+screen_width:
+    dw SCREEN_WIDTH
 half_spiral_screen_width:
-    dw 80
+    dw HALF_SCREEN_WIDTH
 half_spiral_screen_height:
-    dw 50
+    dw HALF_SCREEN_HEIGHT
 
     section .bss
 checkerboard_value:
@@ -163,6 +199,8 @@ v_step:
 offset:
     resd 1
 i:
+    resw 1
+array_index:
     resw 1
 u_int:
     resw 1
