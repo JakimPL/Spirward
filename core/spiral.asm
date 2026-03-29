@@ -1,5 +1,5 @@
-; global do_u_step
-; global do_v_step
+    global do_u_step
+    global do_v_step
     global increment_offset
     global calculate_uv_values
     global calculate_initial_point
@@ -59,8 +59,8 @@ do_u_step:
     ret
 
 do_v_step:
-; call update_depth_buffer
-; call increment_point
+    call update_image
+    call increment_point
     ret
 
 update_image:

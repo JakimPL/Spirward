@@ -44,7 +44,6 @@ extern void do_u_step();
 extern void do_v_step();
 extern void update_image();
 
-void update_depth_buffer();
 void clear_buffers();
 void draw();
 
