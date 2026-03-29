@@ -43,8 +43,9 @@ extern void get_index();
 extern void do_u_step();
 extern void do_v_step();
 extern void update_image();
+extern void draw_spiral();
+extern void clear_buffers();
 
-void clear_buffers();
 void draw();
 
 #endif

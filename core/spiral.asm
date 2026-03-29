@@ -1,3 +1,5 @@
+    global clear_buffers
+    global draw_spiral
     global do_u_step
     global do_v_step
     global increment_offset
@@ -37,7 +39,23 @@
 
     section .text
 
-loop:
+clear_buffers:
+    pusha
+.clear_depth_buffer:
+    mov edi, depth_buffer
+    mov ax, 0x7149
+    mov cx, BUFFER_SIZE * 2
+    rep stosw
+.clear_image_buffer:
+    mov edi, image
+    xor al, al
+    mov cx, BUFFER_SIZE
+    rep stosb
+.exit:
+    popa
+    ret
+
+draw_spiral:
     mov word [i], 0x01
 .loop_start:
     cmp word [i], U_STEPS
@@ -82,11 +100,11 @@ update_image:
 .check_depth:
     xor ebx, ebx
     mov bx, [array_index]
-    fld dword [depth]
-    fcomp dword [depth_buffer + 4 * ebx]
-    fstsw ax
-    sahf
-    jae .exit
+; fld dword [depth]
+; fcomp dword [depth_buffer + 4 * ebx]
+; fstsw ax
+; sahf
+; jae .exit
 .calculate_color:
 .load_uv:
     fld dword [u]
