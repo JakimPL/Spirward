@@ -100,11 +100,11 @@ update_image:
 .check_depth:
     xor ebx, ebx
     mov bx, [array_index]
-; fld dword [depth]
-; fcomp dword [depth_buffer + 4 * ebx]
-; fstsw ax
-; sahf
-; jae .exit
+    fld dword [depth]
+    fcomp dword [depth_buffer + 4 * ebx]
+    fstsw ax
+    sahf
+    jae .exit
 .calculate_color:
 .load_uv:
     fld dword [u]
