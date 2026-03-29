@@ -38,8 +38,8 @@ extern void calculate_uv_values();
 extern void calculate_initial_point();
 extern void increment_point();
 extern void increment_offset();
+extern void calculate_checkerboard_value();
 
-void checkerboard_color(float u, float v);
 void update_depth_buffer(float u, float v, int px, int py, float depth);
 void clear_buffers();
 void draw();

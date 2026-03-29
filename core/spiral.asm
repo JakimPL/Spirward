@@ -2,6 +2,7 @@
     global calculate_uv_values
     global calculate_initial_point
     global increment_point
+    global calculate_checkerboard_value
 
     global focal_length
     global attenuation
@@ -91,28 +92,40 @@ increment_point:
     fstp dword [px]
     ret
 
+calculate_checkerboard_value:
+    push ax
+    fld dword [u]
+    fdiv dword [checkerboard_size]
+    fistp word [u_int]
+    fld dword [v]
+    fdiv dword [checkerboard_size]
+    fistp word [v_int]
+    xor ax, ax
+    mov ax, [u_int]
+    xor ax, [v_int]
+    and ax, 1
+    mov [checkerboard_value], ax
+    fild word [checkerboard_value]
+    fadd dword [checkerboard_dark]
+    fstp dword [checkerboard_value]
+    pop ax
+    ret
+
     section .data
 focal_length:
-
     dd 85.0
 attenuation:
-
     dd 0.25
 checkerboard_dark:
-
     dd 0.2
 checkerboard_size:
-
     dd 0.785398185253143311
 
 two_pi:
-
     dd 6.28318530717958647692
 half_spiral_screen_width:
-
     dw 80
 half_spiral_screen_height:
-
     dw 50
 
     section .bss
@@ -136,3 +149,8 @@ offset:
     resd 1
 i:
     resw 1
+u_int:
+    resw 1
+v_int:
+    resw 1
+

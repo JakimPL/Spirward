@@ -6,13 +6,6 @@
 float image[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
 float depth_buffer[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
 
-void checkerboard_color(float u, float v) {
-    const int u_index = (int) (u / checkerboard_size);
-    const int v_index = (int) (v / checkerboard_size);
-    const bool pattern = (u_index + v_index) % 2 == 0;
-    checkerboard_value = pattern ? 1.0f : checkerboard_dark;
-}
-
 int get_index(int px, int py) {
     return py * SPIRAL_SCREEN_WIDTH + px;
 }
@@ -20,7 +13,7 @@ int get_index(int px, int py) {
 void update_depth_buffer(float u, float v, int px, int py, float depth) {
     const int index = get_index(px, py);
     if (depth < depth_buffer[index]) {
-        checkerboard_color(u, v);
+        calculate_checkerboard_value();
         depth_buffer[index] = depth;
         image[index] = light * checkerboard_value;
     }
