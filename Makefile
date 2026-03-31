@@ -1,7 +1,7 @@
 # Cross-platform Makefile for DOS and Linux builds
 
 # Debug mode (set DEBUG=1 to enable)
-DEBUG ?= 0
+DEBUG ?= 1
 
 # Executables
 LINUX_OUT = spiral-linux
@@ -13,7 +13,8 @@ MAIN_SRC = main.c
 SPIRAL_SOURCES = $(wildcard spiral/*.c)
 SDL_SRC = video/video_sdl.c
 DOS_SRC = video/video_dos.c
-ASM_SRC = core/spiral.asm
+ASM_SRC = core/linux.asm
+COM_SRC = main.asm
 
 # Object files (in main directory)
 SPIRAL_ASM_OBJ_LINUX = spiral-linux.o
@@ -40,9 +41,9 @@ endif
 # Platform-specific flags
 CFLAGS_LINUX = $(CFLAGS_BASE) $(CFLAGS_DEBUG) -Ispiral -Ivideo -m32
 CFLAGS_DOS = $(CFLAGS_BASE) $(CFLAGS_DEBUG) -Ispiral -Ivideo
-ASMFLAGS_LINUX = -f elf32 $(ASMFLAGS_DEBUG)
-ASMFLAGS_DOS = -f coff $(ASMFLAGS_DEBUG)
-ASMFLAGS_COM = -f bin
+ASMFLAGS_LINUX = -f elf32 $(ASMFLAGS_DEBUG) -DLINUX
+ASMFLAGS_DOS = -f coff --prefix _ $(ASMFLAGS_DEBUG) -DDOS
+ASMFLAGS_COM = -f bin -DDOS
 
 # Libraries
 LDFLAGS_LINUX = -lSDL2 -lm
@@ -77,11 +78,10 @@ $(DOS_OUT): $(MAIN_SRC) $(SPIRAL_SOURCES) $(DOS_SRC) $(SPIRAL_ASM_OBJ_DOS)
 	@echo "DOS build complete: $(DOS_OUT)"
 
 # COM build (Assembly only)
-# TODO: Not ready yet - needs standalone implementation
 .PHONY: com
 com: $(COM_OUT)
 
-$(COM_OUT): $(ASM_SRC)
+$(COM_OUT): $(COM_SRC)
 	$(ASM) $(ASMFLAGS_COM) $< -o $@
 	@echo "COM build complete: $(COM_OUT)"
 
@@ -102,7 +102,7 @@ help:
 	@echo "Available targets:"
 	@echo "  make linux       - Build for Linux with SDL2"
 	@echo "  make dos         - Cross-compile for DOS with DJGPP"
-	@echo "  make com         - Assemble .com file (not ready yet)"
+	@echo "  make com         - Assemble standalone .com file"
 	@echo "  make run         - Build and run Linux version"
 	@echo "  make clean       - Remove build artifacts"
 	@echo "  make all         - Build all targets"

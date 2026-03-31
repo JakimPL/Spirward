@@ -2,14 +2,15 @@
 #define SPIRAL_H
 
 #include <stdbool.h>
+#include "video.h"
 
 #define M_PI 3.14159265358979323846
 
-#define SPIRAL_SCREEN_WIDTH 160
-#define SPIRAL_SCREEN_HEIGHT 100
-#define HALF_SPIRAL_SCREEN_WIDTH (SPIRAL_SCREEN_WIDTH / 2)
-#define HALF_SPIRAL_SCREEN_HEIGHT (SPIRAL_SCREEN_HEIGHT / 2)
-#define U_STEPS (SPIRAL_SCREEN_HEIGHT * 2)
+#define SCREEN_WIDTH 160
+#define SCREEN_HEIGHT 100
+#define HALF_SCREEN_WIDTH (SCREEN_WIDTH / 2)
+#define HALF_SCREEN_HEIGHT (SCREEN_HEIGHT / 2)
+#define U_STEPS (SCREEN_HEIGHT * 2)
 #define CHECKERBOARD_V_SIZE 8
 
 extern const float focal_length;
@@ -32,8 +33,7 @@ extern float py;
 extern unsigned short array_index;
 extern float offset;
 
-extern unsigned char image[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
-extern float depth_buffer[SPIRAL_SCREEN_WIDTH * SPIRAL_SCREEN_HEIGHT];
+extern unsigned char image[REAL_SCREEN_WIDTH * REAL_SCREEN_HEIGHT];
 
 extern void calculate_uv_values();
 extern void calculate_initial_point();
@@ -46,6 +46,10 @@ extern void update_image();
 extern void draw_spiral();
 extern void clear_buffers();
 
+extern void video_set_pixel(int x, int y, unsigned char color);
+extern void video_clear_screen(unsigned char color);
+
+void draw_pixel();
 void draw();
 
 #endif

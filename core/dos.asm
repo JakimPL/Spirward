@@ -1,0 +1,42 @@
+    U_STEPS equ 0xC8
+    VIDEO_MODE_13H equ 0x13
+    TEXT_MODE_3H equ 0x03
+    BIOS_VIDEO_INTERRUPT equ 0x10
+    KEYBOARD_INTERRUPT equ 0x16
+    VIDEO_MEMORY_SEGMENT equ 0xA000
+    PALETTE_INDEX_PORT equ 0x03C8
+
+    section .text
+draw_pixel:
+    pusha
+    push VIDEO_MEMORY_SEGMENT
+    pop es
+    mov ax, [py_int]
+    shl ax, 1                ; v *= 2
+    mov bx, ax
+    shl bx, 8                ; bx = v * 256
+    mov dx, ax
+    shl dx, 6                ; dx = v * 64
+    add bx, dx               ; bx = v * 320
+
+    mov ax, [px_int]
+    shl ax, 1                ; x *= 2
+    add bx, ax
+
+    mov cl, [color]
+    mov [es:bx], cl
+
+    popa
+    ret
+
+wait_for_retrace:
+    mov dx, 0x3DA            ; VGA Input Status Register 1
+.wait_end:
+    in al, dx
+    test al, 0x08            ; Bit 3 = vertical retrace status
+    jnz .wait_end            ; Wait for any current retrace to end
+.wait_start:
+    in al, dx
+    test al, 0x08
+    jz .wait_start           ; Wait for next retrace to begin
+    ret

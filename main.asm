@@ -26,14 +26,12 @@ palette_loop:
     pop es
 
 main_loop:
-.reset_video_memory:
-    xor di, di
-
-.clear_buffer:
-    xor ax, ax
-    mov cx, 0x7D00
-    rep stosw
-
+.wait_for_retrace:
+    call wait_for_retrace
+.draw_spiral:
+    call clear_buffers
+    call draw_spiral
+    call increment_offset
 .check_input:
     mov ah, 0x01
     int KEYBOARD_INTERRUPT
@@ -47,10 +45,5 @@ main_loop:
     int BIOS_VIDEO_INTERRUPT
     ret
 
-    U_STEPS equ 0xC8
-    VIDEO_MODE_13H equ 0x13
-    TEXT_MODE_3H equ 0x03
-    BIOS_VIDEO_INTERRUPT equ 0x10
-    KEYBOARD_INTERRUPT equ 0x16
-    VIDEO_MEMORY_SEGMENT equ 0xA000
-    PALETTE_INDEX_PORT equ 0x03C8
+    %include "core/dos.asm"
+    %include "core/spiral.asm"

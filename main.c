@@ -8,14 +8,10 @@
 #endif
 
 void render() {
-    for (int x = 0; x < SPIRAL_SCREEN_WIDTH; x++) {
-        for (int y = 0; y < SPIRAL_SCREEN_HEIGHT; y++) {
-            const int index = y * SPIRAL_SCREEN_WIDTH + x;
-            const unsigned char color = image[index];
-            video_set_pixel(2 * x, 2 * y, color);
-            video_set_pixel(2 * x + 1, 2 * y, color);
-            video_set_pixel(2 * x, 2 * y + 1, color);
-            video_set_pixel(2 * x + 1, 2 * y + 1, color);
+    for (int y = 0; y < REAL_SCREEN_HEIGHT; y++) {
+        for (int x = 0; x < REAL_SCREEN_WIDTH; x++) {
+            video_set_pixel(x, y, image[y * REAL_SCREEN_WIDTH + x]);
+            image[y * REAL_SCREEN_WIDTH + x] = 0; /* Clear after rendering */
         }
     }
 }
@@ -31,8 +27,6 @@ int main(void) {
     if (video_init() != 0) {
         return 1;
     }
-
-    frame();
 
 #ifdef __DJGPP__
     while (!kbhit()) {

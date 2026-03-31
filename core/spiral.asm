@@ -27,7 +27,6 @@
     global i
     global array_index
     global depth_buffer
-    global image
 
     SCREEN_WIDTH equ 160
     SCREEN_HEIGHT equ 100
@@ -42,15 +41,36 @@
 clear_buffers:
     pusha
 .clear_depth_buffer:
-    mov edi, depth_buffer
-    mov ax, 0x7149
-    mov cx, BUFFER_SIZE * 2
-    rep stosw
-.clear_image_buffer:
-    mov edi, image
-    xor al, al
+    %ifdef DOS
+    mov di, depth_buffer
     mov cx, BUFFER_SIZE
+.loop:
+    mov word [di], 0xFFFF
+    mov word [di+2], 0x7F7F
+    add di, 4
+    loop .loop
+    %endif
+    %ifdef LINUX
+    mov edi, depth_buffer
+    mov eax, 0x7F7FFFFF
+    mov ecx, BUFFER_SIZE
+    rep stosd
+    %endif
+.clear_video_buffer:
+    %ifdef DOS
+    push VIDEO_MEMORY_SEGMENT
+    pop es
+    xor di, di
+    xor ax, ax
+    mov cx, VIDEO_BUFFER_SIZE
+    rep stosw
+    %endif
+    %ifdef LINUX
+    mov edi, image
+    xor eax, eax
+    mov ecx, BUFFER_SIZE
     rep stosb
+    %endif
 .exit:
     popa
     ret
@@ -77,8 +97,10 @@ do_u_step:
     ret
 
 do_v_step:
+    pusha
     call update_image
     call increment_point
+    popa
     ret
 
 update_image:
@@ -86,22 +108,35 @@ update_image:
 .get_index:
     fld dword [px]
     frndint
+    fistp word [px_int]
     fld dword [py]
     frndint
-    fimul word [screen_width]
-    faddp
-    fistp word [array_index]
+    fistp word [py_int]
+    mov ax, [py_int]
+    imul ax, SCREEN_WIDTH
+    add ax, [px_int]
+    mov [array_index], ax
 .check_bounds:
-    mov ax, [array_index]
-    cmp ax, 0
-    jl .exit
-    cmp ax, BUFFER_SIZE - 1
-    jg .exit
+    cmp word [px_int], SCREEN_WIDTH
+    jae .exit
+    cmp word [py_int], SCREEN_HEIGHT
+    jae .exit
 .check_depth:
+    %ifdef DOS
+    xor bx, bx
+    %endif
+    %ifdef LINUX
     xor ebx, ebx
-    mov bx, [array_index]
+    %endif
     fld dword [depth]
+    mov bx, [array_index]
+    %ifdef DOS
+    shl bx, 2
+    fcomp dword [depth_buffer + bx]
+    %endif
+    %ifdef LINUX
     fcomp dword [depth_buffer + 4 * ebx]
+    %endif
     fstsw ax
     sahf
     jae .exit
@@ -124,8 +159,8 @@ update_image:
     fadd dword [checkerboard_dark]
     fmul dword [light]
     fistp word [color]
-    mov cl, [color]
-    mov [image + ebx], cl
+.draw_pixel:
+    call draw_pixel
 .exit:
     popa
     ret
@@ -195,58 +230,5 @@ increment_point:
     fstp dword [px]
     ret
 
-    section .data
-focal_length:
-    dd 85.0
-attenuation:
-    dd 0.3
-checkerboard_dark:
-    dd 0.2
-checkerboard_size:
-    dd 0.785398185253143311
-
-w255:
-    dd 255.0
-two_pi:
-    dd 6.28318530717958647692
-screen_width:
-    dw SCREEN_WIDTH
-screen_height:
-    dw SCREEN_HEIGHT
-half_spiral_screen_width:
-    dw HALF_SCREEN_WIDTH
-half_spiral_screen_height:
-    dw HALF_SCREEN_HEIGHT
-
-    section .bss
-color:
-    resw 1
-light:
-    resd 1
-depth:
-    resd 1
-px:
-    resd 1
-py:
-    resd 1
-u:
-    resd 1
-v:
-    resd 1
-v_step:
-    resd 1
-offset:
-    resd 1
-i:
-    resw 1
-array_index:
-    resw 1
-u_int:
-    resw 1
-v_int:
-    resw 1
-
-depth_buffer:
-    resd BUFFER_SIZE
-image:
-    resb BUFFER_SIZE
+    %include "core/consts.asm"
+    %include "core/vars.asm"
