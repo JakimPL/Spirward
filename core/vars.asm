@@ -10,7 +10,9 @@
     global i
     global array_index
     global depth_buffer
+    %ifdef LINUX
     global image
+    %endif
 
     SCREEN_WIDTH equ 160
     SCREEN_HEIGHT equ 100
@@ -61,6 +63,8 @@ v_int:
     resw 1
 
 depth_buffer:
-    resd BUFFER_SIZE
+    resw BUFFER_SIZE
+    %ifdef LINUX
 image:
-    resb VIDEO_BUFFER_SIZE
+    resw BUFFER_SIZE
+    %endif

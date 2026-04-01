@@ -8,10 +8,20 @@
 #endif
 
 void render() {
-    for (int y = 0; y < REAL_SCREEN_HEIGHT; y++) {
-        for (int x = 0; x < REAL_SCREEN_WIDTH; x++) {
-            video_set_pixel(x, y, image[y * REAL_SCREEN_WIDTH + x]);
-            image[y * REAL_SCREEN_WIDTH + x] = 0; /* Clear after rendering */
+    for (int y = 0; y < SCREEN_HEIGHT; y++) {
+        for (int x = 0; x < SCREEN_WIDTH; x++) {
+            unsigned short array_index = y * SCREEN_WIDTH + x;
+            unsigned char color = image[array_index];
+            for (int dx = -4; dx <= 4; dx++) {
+                for (int dy = -4; dy <= 4; dy++) {
+                    int px = 2 * x + dx;
+                    int py = 2 * y + dy;
+                    if (px >= 0 && px < REAL_SCREEN_WIDTH && py >= 0 && py < REAL_SCREEN_HEIGHT) {
+                        video_set_pixel(px, py, color);
+                    }
+                }
+            }
+            image[array_index] = 0;
         }
     }
 }

@@ -26,6 +26,8 @@ checkerboard_size:
 
 w255:
     dd 255.0
+max_depth:
+    dd 2500.0
 two_pi:
     dd 6.28318530717958647692
 screen_width:

@@ -41,36 +41,30 @@
 clear_buffers:
     pusha
 .clear_depth_buffer:
-    %ifdef DOS
-    mov di, depth_buffer
-    mov cx, BUFFER_SIZE
-.loop:
-    mov word [di], 0xFFFF
-    mov word [di+2], 0x7F7F
-    add di, 4
-    loop .loop
-    %endif
-    %ifdef LINUX
-    mov edi, depth_buffer
-    mov eax, 0x7F7FFFFF
-    mov ecx, BUFFER_SIZE
-    rep stosd
-    %endif
+; %ifdef DOS
+; mov di, depth_buffer
+; %endif
+; %ifdef LINUX
+; mov edi, depth_buffer
+; %endif
+; mov ax, 0x7FFF
+; mov cx, BUFFER_SIZE
+; rep stosw
 .clear_video_buffer:
-    %ifdef DOS
-    push VIDEO_MEMORY_SEGMENT
-    pop es
-    xor di, di
-    xor ax, ax
-    mov cx, VIDEO_BUFFER_SIZE
-    rep stosw
-    %endif
-    %ifdef LINUX
-    mov edi, image
-    xor eax, eax
-    mov ecx, BUFFER_SIZE
-    rep stosb
-    %endif
+; %ifdef DOS
+; push VIDEO_MEMORY_SEGMENT
+; pop es
+; xor di, di
+; xor ax, ax
+; mov cx, VIDEO_BUFFER_SIZE
+; rep stosw
+; %endif
+; %ifdef LINUX
+; mov edi, image
+; xor eax, eax
+; mov ecx, BUFFER_SIZE
+; rep stosb
+; %endif
 .exit:
     popa
     ret
@@ -87,13 +81,58 @@ draw_spiral:
     ret
 
 do_u_step:
-    call calculate_uv_values
-    call calculate_initial_point
+    pusha
+calculate_uv_values:
+.v:
+    fldz
+    fstp dword [v]
+.v_step:                     ; v_step ← 2π / i
+    fld dword [two_pi]
+    fild word [i]
+    fdiv
+    fst dword [v_step]
+.u:                          ; u ← v_step × focal_length
+    fmul dword [focal_length]
+    fst dword [u]
+.depth:                      ; depth ← u * u
+    fld st0
+    fmul st0
+; .check_depth:
+; ficom word [max_depth]
+; fstsw ax
+; sahf
+; jae update_image.exit_pop
+.save_depth:
+    fistp word [depth]
+.calculate_light:
+    fmul dword [attenuation]
+    fld1
+    faddp
+    fld dword [w255]
+    fdivr
+    fstp dword [light]
+calculate_initial_point:
+    fld dword [u]
+    fadd dword [offset]
+.sincos:
+    fsincos
+.py:
+    fadd st0, st0
+    fdiv dword [v_step]
+    fiadd word [half_spiral_screen_height]
+    fstp dword [py]
+.px:
+    fadd st0, st0
+    fdiv dword [v_step]
+    fiadd word [half_spiral_screen_width]
+    fstp dword [px]
+.v:
     mov cl, byte [i]
 .v_loop:
     call do_v_step
     loop .v_loop
-.v_loop_end:
+.exit:
+    popa
     ret
 
 do_v_step:
@@ -122,24 +161,32 @@ update_image:
     cmp word [py_int], SCREEN_HEIGHT
     jae .exit
 .check_depth:
-    %ifdef DOS
-    xor bx, bx
-    %endif
-    %ifdef LINUX
-    xor ebx, ebx
-    %endif
-    fld dword [depth]
-    mov bx, [array_index]
-    %ifdef DOS
-    shl bx, 2
-    fcomp dword [depth_buffer + bx]
-    %endif
-    %ifdef LINUX
-    fcomp dword [depth_buffer + 4 * ebx]
-    %endif
-    fstsw ax
-    sahf
-    jae .exit
+; %ifdef DOS
+; xor bx, bx
+; %endif
+; %ifdef LINUX
+; xor ebx, ebx
+; %endif
+; mov bx, [array_index]
+; %ifdef DOS
+; shl bx, 1
+; %endif
+; fld dword [depth]
+; %ifdef DOS
+; ficom word [depth_buffer + bx]
+; %endif
+; %ifdef LINUX
+; ficom word [depth_buffer + 2 * ebx]
+; %endif
+; fstsw ax
+; sahf
+; jae .exit_pop
+; %ifdef DOS
+; fistp dword [depth_buffer + bx]
+; %endif
+; %ifdef LINUX
+; fistp dword [depth_buffer + 2 * ebx]
+; %endif
 .calculate_color:
 .load_uv:
     fld dword [u]
@@ -161,6 +208,9 @@ update_image:
     fistp word [color]
 .draw_pixel:
     call draw_pixel
+    jmp .exit
+.exit_pop:
+    fstp st0
 .exit:
     popa
     ret
@@ -170,48 +220,6 @@ increment_offset:
     fdiv dword [focal_length]
     fadd dword [offset]
     fst dword [offset]
-    ret
-
-calculate_uv_values:
-.v:
-    fldz
-    fstp dword [v]
-.v_step:                     ; v_step ← 2π / i
-    fld dword [two_pi]
-    fild word [i]
-    fdiv
-    fst dword [v_step]
-.u:                          ; u ← v_step × focal_length
-    fmul dword [focal_length]
-    fst dword [u]
-.depth:                      ; depth ← u * u
-    fld st0
-    fmul st0
-    fstp dword [depth]
-.calculate_light:
-    fmul dword [attenuation]
-    fld1
-    faddp
-    fld dword [w255]
-    fdivr
-    fstp dword [light]
-    ret
-
-calculate_initial_point:
-    fld dword [u]
-    fadd dword [offset]
-.sincos:
-    fsincos
-.py:
-    fadd st0, st0
-    fdiv dword [v_step]
-    fiadd word [half_spiral_screen_height]
-    fstp dword [py]
-.px:
-    fadd st0, st0
-    fdiv dword [v_step]
-    fiadd word [half_spiral_screen_width]
-    fstp dword [px]
     ret
 
 increment_point:

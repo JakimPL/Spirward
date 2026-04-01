@@ -4,9 +4,7 @@
 #include "spiral.h"
 
 void draw_pixel() {
-    unsigned char _x = (unsigned char) (array_index % SCREEN_WIDTH);
-    unsigned char _y = (unsigned char) (array_index / SCREEN_WIDTH);
-    image[2 * (_y * REAL_SCREEN_WIDTH + _x)] = (unsigned char) (color);
+    image[array_index] = (unsigned char) (color);
 }
 
 void clear_screen() {
