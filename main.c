@@ -12,8 +12,8 @@ void render() {
         for (int x = 0; x < SCREEN_WIDTH; x++) {
             unsigned short array_index = y * SCREEN_WIDTH + x;
             unsigned char color = image[array_index];
-            for (int dx = -4; dx <= 4; dx++) {
-                for (int dy = -4; dy <= 4; dy++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
                     int px = 2 * x + dx;
                     int py = 2 * y + dy;
                     if (px >= 0 && px < REAL_SCREEN_WIDTH && py >= 0 && py < REAL_SCREEN_HEIGHT) {

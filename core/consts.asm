@@ -27,11 +27,13 @@ checkerboard_size:
 w255:
     dd 255.0
 max_depth:
-    dd 2500.0
+    dw 150
 two_pi:
     dd 6.28318530717958647692
 screen_width:
     dw SCREEN_WIDTH
+screen_height:
+    dw SCREEN_HEIGHT
 half_spiral_screen_width:
     dw HALF_SCREEN_WIDTH
 half_spiral_screen_height:

@@ -83,7 +83,7 @@ com: $(COM_OUT)
 
 $(COM_OUT): $(COM_SRC)
 	$(ASM) $(ASMFLAGS_COM) $< -o $@
-	@echo "COM build complete: $(COM_OUT)"
+	@echo "COM build complete: $(COM_OUT) ($$(stat -c%s $@) bytes)"
 
 # Run Linux version
 .PHONY: run

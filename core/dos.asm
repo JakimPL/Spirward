@@ -12,54 +12,19 @@ draw_pixel:
     push VIDEO_MEMORY_SEGMENT
     pop es
 
-    mov cl, [color]          ; Save color once
-
-; dy loop: -4 to 4
-    mov si, -1
-.dy_loop:
-; dx loop: -4 to 4
-    mov di, -1
-.dx_loop:
-; px = px_int * 2 + dx
     mov ax, [px_int]
     shl ax, 1
-    add ax, di
-; Bounds check: 0 <= px < 320
-    test ax, ax
-    js .next_dx              ; Skip if negative
-    cmp ax, 320
-    jge .next_dx
-    mov bx, ax               ; Save px
-
-; py = py_int * 2 + dy
-    mov ax, [py_int]
-    shl ax, 1
-    add ax, si
-; Bounds check: 0 <= py < 200
-    test ax, ax
-    js .next_dx
-    cmp ax, 200
-    jge .next_dx
-
-; offset = py * 320 + px = py * (256 + 64) + px
-    mov dx, ax
-    shl ax, 8                ; ax = py * 256
-    shl dx, 6                ; dx = py * 64
-    add ax, dx               ; ax = py * 320
-    add ax, bx               ; ax = offset
-
-    mov bx, ax
+    mov bx, [py_int]
+    shl bx, 1
+    imul bx, REAL_SCREEN_WIDTH
+    add bx, ax
+    mov cl, [color]
     mov [es:bx], cl
-
-.next_dx:
-    inc di
-    cmp di, 1
-    jl .dx_loop
-
-    inc si
-    cmp si, 1
-    jl .dy_loop
-
+    mov [es:bx-1], cl
+    mov [es:bx+1], cl
+    mov [es:bx+REAL_SCREEN_WIDTH-1], cl
+    mov [es:bx+REAL_SCREEN_WIDTH], cl
+    mov [es:bx+REAL_SCREEN_WIDTH+1], cl
     popa
     ret
 
