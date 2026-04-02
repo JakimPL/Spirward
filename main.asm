@@ -22,9 +22,6 @@ palette_loop:
     inc bx
     loop palette_loop
 
-    push VIDEO_MEMORY_SEGMENT
-    pop es
-
 main_loop:
 .wait_for_retrace:
     call wait_for_retrace

@@ -14,6 +14,9 @@
     U_STEPS equ SCREEN_HEIGHT * 2
     BUFFER_SIZE equ SCREEN_WIDTH * SCREEN_HEIGHT
 
+    TWO_PI equ 0xC90F
+    FOCAL_LENGTH equ 0x55
+
     section .data
 focal_length:
     dd 85.0
@@ -26,6 +29,10 @@ checkerboard_size:
 
 w255:
     dd 255.0
+w256:
+    dd 256.0
+w2048:
+    dd 2048.0
 max_depth:
     dw 150
 two_pi:

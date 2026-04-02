@@ -31,7 +31,7 @@ clear_buffers:
     ret
 
 draw_spiral:
-    mov word [i], 0x01
+    mov word [i], 40
 .loop_start:
     cmp word [i], U_STEPS
     jg .loop_end
@@ -47,14 +47,35 @@ calculate_uv_values:
 .v:
     fldz
     fstp dword [v]
+    xor dx, dx
+; mov [v], dx
+; mov [v + 2], dx
 .v_step:                     ; v_step ← 2π / i
     fld dword [two_pi]
     fidiv word [i]
     fst dword [v_step]
+
+    mov bx, word [i]
+    mov ax, 0xCB20
+    xor dx, dx
+    div bx
+    shr ax, 2
+    mov [v_step], ax
+    fild word [v_step]
+    fdiv dword [w2048]
+    fstp dword [v_step]
 .u:                          ; u ← v_step × focal_length
     fmul dword [focal_length]
-    fst dword [u]
+    fstp dword [u]
+
+    mov bl, FOCAL_LENGTH
+    mul bx
+    mov word [u], ax
+    fild word [u]
+    fdiv dword [w2048]
+    fstp dword [u]
 .depth:                      ; depth ← u * u
+    fld dword [u]
     fld st0
     fmul st0
 .check_depth:

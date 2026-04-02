@@ -28,14 +28,6 @@
     global array_index
     global depth_buffer
 
-    SCREEN_WIDTH equ 160
-    SCREEN_HEIGHT equ 100
-    HALF_SCREEN_WIDTH equ SCREEN_WIDTH / 2
-    HALF_SCREEN_HEIGHT equ SCREEN_HEIGHT / 2
-
-    U_STEPS equ SCREEN_HEIGHT * 2
-    BUFFER_SIZE equ SCREEN_WIDTH * SCREEN_HEIGHT
-
     %include "core/spiral.asm"
 
     extern draw_pixel
