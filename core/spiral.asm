@@ -53,7 +53,7 @@ calculate_uv_values:
 .v_step:                     ; v_step ← 2π / i
     fld dword [two_pi]
     fidiv word [i]
-    fst dword [v_step]
+    fstp dword [v_step]
 
     mov bx, word [i]
     mov ax, 0xCB20
@@ -71,27 +71,32 @@ calculate_uv_values:
     mov bl, FOCAL_LENGTH
     mul bx
     mov word [u], ax
-    fild word [u]
+    fild word [u]            ; snap to integer for cylindrical effect
+; frindint
     fdiv dword [w2048]
     fstp dword [u]
 .depth:                      ; depth ← u * u
     fld dword [u]
-    fld st0
-    fmul st0
-.check_depth:
-    ficom word [max_depth]
-    fstsw ax
-    sahf
-    jae update_image.exit_pop
-.save_depth:
+    fmul st0, st0
     fistp word [depth]
+
+    shr ax, 8
+    mul ax
+    mov word [depth], ax
+    fild word [depth]
+    fstp dword [depth]
+
 .calculate_light:
+    fld dword [depth]
     fmul dword [attenuation]
     fld1
     faddp
     fld dword [w255]
     fdivr
     fstp dword [light]
+
+    shr ax, 4
+
 calculate_initial_point:
     fld dword [u]
     fadd dword [offset]

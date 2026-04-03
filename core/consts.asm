@@ -21,7 +21,7 @@
 focal_length:
     dd 85.0
 attenuation:
-    dd 0.3
+    dd 0.0008
 checkerboard_dark:
     dd 0.2
 checkerboard_size:
