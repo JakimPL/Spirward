@@ -56,7 +56,7 @@ calculate_uv_values:
     fstp dword [f_v_step]
 
     mov bx, word [i]
-    mov ax, 0xCB20
+    mov ax, 0xCB20           ; 2π+ in fixed-point
     xor dx, dx
     div bx
     shr ax, 2
@@ -102,8 +102,8 @@ calculate_uv_values:
     xchg ax, bx
     xor dx, dx
     div bx
-    mov word [f_light], ax
-    fild word [f_light]
+    mov word [light], ax
+    fild word [light]
     fstp dword [f_light]
 
 calculate_initial_point:
@@ -160,9 +160,21 @@ update_image:
     fld dword [f_u]
     fdiv dword [checkerboard_size]
     fistp word [u_int]
+
     fld dword [f_v]
     fdiv dword [checkerboard_size]
     fistp word [v_int]
+
+; mov ax, [u]
+; mov bx, 0x648 ; π / 4
+; xor dx, dx
+; div bx
+; mov [u_int], ax
+; mov ax, [v]
+; xor dx, dx
+; div bx
+; mov [v_int], ax
+
 .apply_pattern:
     xor cx, cx
     mov cx, [u_int]
@@ -194,6 +206,14 @@ increment_point:
     fld dword [f_px]
     fld dword [f_py]
     fld dword [f_v]
+
+; fld dword [f_v]
+; fmul dword [w2048]
+; fistp dword [v]
+
+; mov ax, [v]
+; add ax, [v_step]
+; mov [v], ax
 .increment_v:
     fadd dword [f_v_step]
     fst dword [f_v]
