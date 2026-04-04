@@ -25,7 +25,3 @@ checkerboard_size:
 
 two_pi:
     dd 6.28318530717958647692
-half_spiral_screen_width:
-    dw HALF_SCREEN_WIDTH
-half_spiral_screen_height:
-    dw HALF_SCREEN_HEIGHT

@@ -12,19 +12,14 @@ draw_pixel:
     push VIDEO_MEMORY_SEGMENT
     pop es
 
-    mov ax, [px_int]
-    shl ax, 1
-    mov bx, [py_int]
-    shl bx, 1
-    imul bx, REAL_SCREEN_WIDTH
-    add bx, ax
+    mov bx, [array_index]
     mov cl, [color]
     mov [es:bx], cl
-    mov [es:bx-1], cl
-    mov [es:bx+1], cl
-    mov [es:bx+REAL_SCREEN_WIDTH-1], cl
-    mov [es:bx+REAL_SCREEN_WIDTH], cl
-    mov [es:bx+REAL_SCREEN_WIDTH+1], cl
+; mov [es:bx-1], cl
+; mov [es:bx+1], cl
+; mov [es:bx+REAL_SCREEN_WIDTH-1], cl
+; mov [es:bx+REAL_SCREEN_WIDTH], cl
+; mov [es:bx+REAL_SCREEN_WIDTH+1], cl
     popa
     ret
 

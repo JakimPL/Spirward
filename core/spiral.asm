@@ -76,12 +76,10 @@ calculate_initial_point:
 .py:
     fadd st0, st0            ; optimize 2x
     fdiv dword [f_v_step]
-    fiadd word [half_spiral_screen_height]
     fstp dword [f_py]
 .px:
     fadd st0, st0
     fdiv dword [f_v_step]
-    fiadd word [half_spiral_screen_width]
     fstp dword [f_px]
 .v:
     mov cl, byte [i]
@@ -97,11 +95,22 @@ do_v_step:
 update_image:
 .get_index:
     fld dword [f_px]
-    frndint
     fistp word [px_int]
     fld dword [f_py]
-    frndint
     fistp word [py_int]
+    mov ax, word [py_int]
+    add ax, SCREEN_HEIGHT
+    cmp ax, REAL_SCREEN_HEIGHT ; remove?
+    jae .exit
+    imul ax, SCREEN_WIDTH
+    mov bx, word [px_int]
+    add bx, HALF_SCREEN_WIDTH
+; cmp bl, SCREEN_WIDTH
+; jae .exit
+    add ax, bx
+    shl ax, 1
+    mov [array_index], ax
+    %ifdef LINUX
     mov ax, [py_int]
     imul ax, SCREEN_WIDTH
     add ax, [px_int]
@@ -111,6 +120,7 @@ update_image:
     jae .exit
     cmp word [py_int], SCREEN_HEIGHT
     jae .exit
+    %endif
 .calculate_color:
 .load_uv:
     fld dword [f_u]
@@ -123,9 +133,9 @@ update_image:
 
 .apply_pattern:
     xor ax, ax
-    mov ax, [u_int]
-    xor ax, [v_int]
-    and ax, 0x01
+    mov al, [u_int]
+    xor al, [v_int]
+    and al, 0x01
     mov [color], ax
 .apply_lighting:
     mov bx, word [light]
