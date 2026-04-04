@@ -28,17 +28,24 @@ clear_buffers:
     %endif
 .exit:
     popa
-    ret
 
 draw_spiral:
-    mov word [i], 40
+    xor ax, ax
+    mov al, 40
 .loop_start:
-    cmp word [i], U_STEPS
-    jg .loop_end
+    cmp al, U_STEPS
+    ja .loop_end
+    mov word [i], ax
     call do_u_step
-    inc word [i]
+    inc al
     jmp .loop_start
 .loop_end:
+
+increment_offset:
+    fld1
+    fdiv dword [focal_length]
+    fadd dword [offset]
+    fst dword [offset]
     ret
 
 do_u_step:
@@ -47,72 +54,36 @@ calculate_uv_values:
 .v:
     fldz
     fstp dword [f_v]
-    xor dx, dx
-; mov [v], dx
-; mov [v + 2], dx
 .v_step:                     ; v_step ← 2π / i
     fld dword [two_pi]       ; fldpi?
     fidiv word [i]
     fstp dword [f_v_step]
-
-    mov bx, word [i]
-    mov ax, 0xCB20           ; 2π+ in fixed-point
-    xor dx, dx
-    div bx
-    shr ax, 2
-    mov [v_step], ax
-    fild word [v_step]
-    fdiv dword [w2048]
-    fstp dword [f_v_step]
 .u:                          ; u ← v_step × focal_length
     fld dword [f_v_step]
-    fmul dword [focal_length]
-    fstp dword [f_u]
-
-    mov bl, FOCAL_LENGTH
-    mul bx
-    mov word [u], ax
-    fild word [u]
-    fdiv dword [w2048]       ; snap to integer for cylindrical effect
+    fmul dword [focal_length] ; TODO: reduce precision
 ; frndint
-    fstp dword [f_u]
+    fst dword [f_u]
+    fld st0
 .depth:                      ; depth ← u * u
-    fld dword [f_u]
     fmul st0, st0
     fistp word [depth]
 
-    shr ax, 8
-    mul ax
-    mov word [depth], ax
-    fild word [depth]
-    fstp dword [f_depth]
-
 .calculate_light:
-    fld dword [f_depth]
-    fmul dword [attenuation]
-    fld1
-    faddp
-    fld dword [w255]
-    fdivr
-    fstp dword [f_light]
-
-    shr ax, 8
+    mov ax, [depth]
+    shr ax, 2
     add ax, 3
     mov bx, 1024
     xchg ax, bx
     xor dx, dx
     div bx
     mov word [light], ax
-    fild word [light]
-    fstp dword [f_light]
 
 calculate_initial_point:
-    fld dword [f_u]
     fadd dword [offset]
 .sincos:
     fsincos
 .py:
-    fadd st0, st0
+    fadd st0, st0            ; optimize 2x
     fdiv dword [f_v_step]
     fiadd word [half_spiral_screen_height]
     fstp dword [f_py]
@@ -132,13 +103,7 @@ calculate_initial_point:
 
 do_v_step:
     pusha
-    call update_image
-    call increment_point
-    popa
-    ret
-
 update_image:
-    pusha
 .get_index:
     fld dword [f_px]
     frndint
@@ -165,55 +130,26 @@ update_image:
     fdiv dword [checkerboard_size]
     fistp word [v_int]
 
-; mov ax, [u]
-; mov bx, 0x648 ; π / 4
-; xor dx, dx
-; div bx
-; mov [u_int], ax
-; mov ax, [v]
-; xor dx, dx
-; div bx
-; mov [v_int], ax
-
 .apply_pattern:
-    xor cx, cx
-    mov cx, [u_int]
-    xor cx, [v_int]
-    and cx, 0x01
-    mov [color], cx
+    xor ax, ax
+    mov ax, [u_int]
+    xor ax, [v_int]
+    and ax, 0x01
+    mov [color], ax
 .apply_lighting:
-    fild word [color]
-    fadd dword [checkerboard_dark]
-    fmul dword [f_light]
-    fistp word [color]
+    mov bx, word [light]
+    mul bx
+    mov word [color], ax
 .draw_pixel:
     call draw_pixel
     jmp .exit
-.exit_pop:
-    fstp st0
 .exit:
     popa
-    ret
-
-increment_offset:
-    fld1
-    fdiv dword [focal_length]
-    fadd dword [offset]
-    fst dword [offset]
-    ret
 
 increment_point:
     fld dword [f_px]
     fld dword [f_py]
     fld dword [f_v]
-
-; fld dword [f_v]
-; fmul dword [w2048]
-; fistp dword [v]
-
-; mov ax, [v]
-; add ax, [v_step]
-; mov [v], ax
 .increment_v:
     fadd dword [f_v_step]
     fst dword [f_v]

@@ -26,9 +26,7 @@ main_loop:
 .wait_for_retrace:
     call wait_for_retrace
 .draw_spiral:
-    call clear_buffers
     call draw_spiral
-    call increment_offset
 .check_input:
     mov ah, 0x01
     int KEYBOARD_INTERRUPT
