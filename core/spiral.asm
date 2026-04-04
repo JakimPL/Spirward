@@ -46,14 +46,14 @@ do_u_step:
 calculate_uv_values:
 .v:
     fldz
-    fstp dword [v]
+    fstp dword [f_v]
     xor dx, dx
 ; mov [v], dx
 ; mov [v + 2], dx
 .v_step:                     ; v_step ← 2π / i
-    fld dword [two_pi]
+    fld dword [two_pi]       ; fldpi?
     fidiv word [i]
-    fstp dword [v_step]
+    fstp dword [f_v_step]
 
     mov bx, word [i]
     mov ax, 0xCB20
@@ -63,20 +63,21 @@ calculate_uv_values:
     mov [v_step], ax
     fild word [v_step]
     fdiv dword [w2048]
-    fstp dword [v_step]
+    fstp dword [f_v_step]
 .u:                          ; u ← v_step × focal_length
+    fld dword [f_v_step]
     fmul dword [focal_length]
-    fstp dword [u]
+    fstp dword [f_u]
 
     mov bl, FOCAL_LENGTH
     mul bx
     mov word [u], ax
-    fild word [u]            ; snap to integer for cylindrical effect
-; frindint
-    fdiv dword [w2048]
-    fstp dword [u]
+    fild word [u]
+    fdiv dword [w2048]       ; snap to integer for cylindrical effect
+; frndint
+    fstp dword [f_u]
 .depth:                      ; depth ← u * u
-    fld dword [u]
+    fld dword [f_u]
     fmul st0, st0
     fistp word [depth]
 
@@ -84,16 +85,16 @@ calculate_uv_values:
     mul ax
     mov word [depth], ax
     fild word [depth]
-    fstp dword [depth]
+    fstp dword [f_depth]
 
 .calculate_light:
-    fld dword [depth]
+    fld dword [f_depth]
     fmul dword [attenuation]
     fld1
     faddp
     fld dword [w255]
     fdivr
-    fstp dword [light]
+    fstp dword [f_light]
 
     shr ax, 8
     add ax, 3
@@ -101,25 +102,25 @@ calculate_uv_values:
     xchg ax, bx
     xor dx, dx
     div bx
-    mov word [light], ax
-    fild word [light]
-    fstp dword [light]
+    mov word [f_light], ax
+    fild word [f_light]
+    fstp dword [f_light]
 
 calculate_initial_point:
-    fld dword [u]
+    fld dword [f_u]
     fadd dword [offset]
 .sincos:
     fsincos
 .py:
     fadd st0, st0
-    fdiv dword [v_step]
+    fdiv dword [f_v_step]
     fiadd word [half_spiral_screen_height]
-    fstp dword [py]
+    fstp dword [f_py]
 .px:
     fadd st0, st0
-    fdiv dword [v_step]
+    fdiv dword [f_v_step]
     fiadd word [half_spiral_screen_width]
-    fstp dword [px]
+    fstp dword [f_px]
 .v:
     mov cl, byte [i]
 .v_loop:
@@ -139,10 +140,10 @@ do_v_step:
 update_image:
     pusha
 .get_index:
-    fld dword [px]
+    fld dword [f_px]
     frndint
     fistp word [px_int]
-    fld dword [py]
+    fld dword [f_py]
     frndint
     fistp word [py_int]
     mov ax, [py_int]
@@ -154,39 +155,12 @@ update_image:
     jae .exit
     cmp word [py_int], SCREEN_HEIGHT
     jae .exit
-.check_depth:
-; %ifdef DOS
-; xor bx, bx
-; %endif
-; %ifdef LINUX
-; xor ebx, ebx
-; %endif
-; mov bx, [array_index]
-; %ifdef DOS
-; shl bx, 1
-; %endif
-; fld dword [depth]
-; %ifdef DOS
-; ficom word [depth_buffer + bx]
-; %endif
-; %ifdef LINUX
-; ficom word [depth_buffer + 2 * ebx]
-; %endif
-; fstsw ax
-; sahf
-; jae .exit_pop
-; %ifdef DOS
-; fistp dword [depth_buffer + bx]
-; %endif
-; %ifdef LINUX
-; fistp dword [depth_buffer + 2 * ebx]
-; %endif
 .calculate_color:
 .load_uv:
-    fld dword [u]
+    fld dword [f_u]
     fdiv dword [checkerboard_size]
     fistp word [u_int]
-    fld dword [v]
+    fld dword [f_v]
     fdiv dword [checkerboard_size]
     fistp word [v_int]
 .apply_pattern:
@@ -198,7 +172,7 @@ update_image:
 .apply_lighting:
     fild word [color]
     fadd dword [checkerboard_dark]
-    fmul dword [light]
+    fmul dword [f_light]
     fistp word [color]
 .draw_pixel:
     call draw_pixel
@@ -217,19 +191,19 @@ increment_offset:
     ret
 
 increment_point:
-    fld dword [px]
-    fld dword [py]
-    fld dword [v]
+    fld dword [f_px]
+    fld dword [f_py]
+    fld dword [f_v]
 .increment_v:
-    fadd dword [v_step]
-    fst dword [v]
+    fadd dword [f_v_step]
+    fst dword [f_v]
     fadd dword [offset]
 .increment_px_py:
     fsincos
     fsubp st3, st0           ; px - cos(v)
     fsubp                    ; py - sin(v)
-    fstp dword [py]
-    fstp dword [px]
+    fstp dword [f_py]
+    fstp dword [f_px]
     ret
 
     %include "core/consts.asm"

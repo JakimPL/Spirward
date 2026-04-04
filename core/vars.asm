@@ -32,17 +32,31 @@
     section .bss
 color:
     resw 1
+f_light:
+    resd 1
 light:
+    resw 1
+f_depth:
     resd 1
 depth:
+    resw 1
+f_px:
     resd 1
 px:
+    resw 1
+f_py:
     resd 1
 py:
+    resw 1
+f_u:
     resd 1
 u:
+    resw 1
+f_v:
     resd 1
 v:
+    resw 1
+f_v_step:
     resd 1
 v_step:
     resd 1
