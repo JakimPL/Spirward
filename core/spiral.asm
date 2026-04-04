@@ -1,16 +1,7 @@
     section .text
+draw:
 clear_buffers:
     pusha
-.clear_depth_buffer:
-    %ifdef DOS
-    mov di, depth_buffer
-    %endif
-    %ifdef LINUX
-    mov edi, depth_buffer
-    %endif
-    mov ax, 0x7FFF
-    mov cx, BUFFER_SIZE
-    rep stosw
 .clear_video_buffer:
     %ifdef DOS
     push VIDEO_MEMORY_SEGMENT
@@ -31,9 +22,9 @@ clear_buffers:
 
 draw_spiral:
     xor ax, ax
-    mov al, 40
+    mov al, U_MIN
 .loop_start:
-    cmp al, U_STEPS
+    cmp al, U_MAX
     ja .loop_end
     mov word [i], ax
     call do_u_step
@@ -45,7 +36,7 @@ increment_offset:
     fld1
     fdiv dword [focal_length]
     fadd dword [offset]
-    fst dword [offset]
+    fstp dword [offset]
     ret
 
 do_u_step:

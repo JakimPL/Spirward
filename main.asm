@@ -26,7 +26,7 @@ main_loop:
 .wait_for_retrace:
     call wait_for_retrace
 .draw_spiral:
-    call draw_spiral
+    call draw
 .check_input:
     mov ah, 0x01
     int KEYBOARD_INTERRUPT

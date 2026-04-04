@@ -1,19 +1,3 @@
-    global color
-    global light
-    global depth
-    global px
-    global py
-    global u
-    global v
-    global v_step
-    global offset
-    global i
-    global array_index
-    global depth_buffer
-    %ifdef LINUX
-    global image
-    %endif
-
     SCREEN_WIDTH equ 160
     SCREEN_HEIGHT equ 100
     BUFFER_SIZE equ SCREEN_WIDTH * SCREEN_HEIGHT
@@ -32,12 +16,8 @@
     section .bss
 color:
     resw 1
-f_light:
-    resd 1
 light:
     resw 1
-f_depth:
-    resd 1
 depth:
     resw 1
 f_px:
@@ -76,8 +56,6 @@ u_int:
 v_int:
     resw 1
 
-depth_buffer:
-    resw BUFFER_SIZE
     %ifdef LINUX
 image:
     resw BUFFER_SIZE

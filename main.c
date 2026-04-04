@@ -30,7 +30,6 @@ void frame() {
     draw();
     render();
     video_present();
-    increment_offset();
 }
 
 int main(void) {

@@ -10,8 +10,3 @@ void draw_pixel() {
 void clear_screen() {
     video_clear_screen(0);
 }
-
-void draw() {
-    clear_buffers();
-    draw_spiral();
-}
