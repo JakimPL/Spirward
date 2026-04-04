@@ -95,7 +95,15 @@ calculate_uv_values:
     fdivr
     fstp dword [light]
 
-    shr ax, 4
+    shr ax, 8
+    add ax, 3
+    mov bx, 1024
+    xchg ax, bx
+    xor dx, dx
+    div bx
+    mov word [light], ax
+    fild word [light]
+    fstp dword [light]
 
 calculate_initial_point:
     fld dword [u]
