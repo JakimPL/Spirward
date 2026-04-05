@@ -1,7 +1,6 @@
     section .text
 draw:
 clear_buffers:
-    pusha
 .clear_video_buffer:
     %ifdef DOS
     push VIDEO_MEMORY_SEGMENT
@@ -17,10 +16,9 @@ clear_buffers:
     mov ecx, BUFFER_SIZE
     rep stosb
     %endif
-.exit:
-    popa
 
 draw_spiral:
+    pusha
     xor ax, ax
     mov al, U_MIN
 .loop_start:
@@ -37,6 +35,7 @@ increment_offset:
     fdiv dword [focal_length]
     fadd dword [offset]
     fstp dword [offset]
+    popa
     ret
 
 do_u_step:
@@ -98,28 +97,34 @@ update_image:
     fistp word [px_int]
     fld dword [f_py]
     fistp word [py_int]
-    mov ax, word [py_int]
+    %ifdef DOS
+.map_to_screen:
+    mov ax, [py_int]
     add ax, SCREEN_HEIGHT
-    cmp ax, REAL_SCREEN_HEIGHT ; remove?
-    jae .exit
+; cmp ax, REAL_SCREEN_HEIGHT ; remove?
+; jae .exit
     imul ax, SCREEN_WIDTH
-    mov bx, word [px_int]
+    mov bx, [px_int]
     add bx, HALF_SCREEN_WIDTH
 ; cmp bl, SCREEN_WIDTH
 ; jae .exit
     add ax, bx
     shl ax, 1
     mov [array_index], ax
+    %endif
     %ifdef LINUX
+.map_to_screen:
     mov ax, [py_int]
+    add ax, HALF_SCREEN_HEIGHT
+    cmp ax, SCREEN_HEIGHT
+    jae .exit
     imul ax, SCREEN_WIDTH
-    add ax, [px_int]
+    mov bx, [px_int]
+    add bx, HALF_SCREEN_WIDTH
+    cmp bx, SCREEN_WIDTH
+    jae .exit
+    add ax, bx
     mov [array_index], ax
-.check_bounds:
-    cmp word [px_int], SCREEN_WIDTH
-    jae .exit
-    cmp word [py_int], SCREEN_HEIGHT
-    jae .exit
     %endif
 .calculate_color:
 .load_uv:
@@ -145,7 +150,6 @@ update_image:
     call draw_pixel
     jmp .exit
 .exit:
-    popa
 
 increment_point:
     fld dword [f_px]
@@ -161,6 +165,7 @@ increment_point:
     fsubp                    ; py - sin(v)
     fstp dword [f_py]
     fstp dword [f_px]
+    popa
     ret
 
     %include "core/consts.asm"
