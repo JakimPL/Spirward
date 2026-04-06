@@ -54,6 +54,9 @@ calculate_uv_values:
 ; frndint
     fst dword [f_u]
     fld st0
+    fld st0
+    fdiv dword [checkerboard_size]
+    fistp word [u_int]
 .depth:                      ; depth ← u * u
     fmul st0, st0
     fistp word [depth]
@@ -92,11 +95,6 @@ calculate_initial_point:
 do_v_step:
     pusha
 update_image:
-.get_index:
-    fld dword [f_px]
-    fistp word [px_int]
-    fld dword [f_py]
-    fistp word [py_int]
     %ifdef DOS
 .map_to_screen:
     mov ax, [py_int]
@@ -128,10 +126,6 @@ update_image:
     %endif
 .calculate_color:
 .load_uv:
-    fld dword [f_u]
-    fdiv dword [checkerboard_size]
-    fistp word [u_int]
-
     fld dword [f_v]
     fdiv dword [checkerboard_size]
     fistp word [v_int]
@@ -163,8 +157,10 @@ increment_point:
     fsincos
     fsubp st3, st0           ; px - cos(v)
     fsubp                    ; py - sin(v)
-    fstp dword [f_py]
-    fstp dword [f_px]
+    fst dword [f_py]
+    fistp word [py_int]
+    fst dword [f_px]
+    fistp word [px_int]
     popa
     ret
 
