@@ -19,17 +19,14 @@ clear_buffers:
 
 draw_spiral:
     pusha
-    xor ax, ax
-    mov al, U_MIN
+    mov ax, U_MIN
 .loop_start:
     cmp al, U_MAX
-    ja .loop_end
+    ja increment_offset
     mov word [i], ax
     call do_u_step
     inc al
     jmp .loop_start
-.loop_end:
-
 increment_offset:
     fld1
     fdiv dword [focal_length]
@@ -94,6 +91,27 @@ calculate_initial_point:
 
 do_v_step:
     pusha
+
+increment_point:
+    fld dword [f_px]
+    fld dword [f_py]
+    fld dword [f_v]
+.increment_v:
+    fadd dword [f_v_step]
+    fst dword [f_v]
+    fadd dword [offset]
+.checkerboard_v:
+    fld st0
+    fdiv dword [checkerboard_size]
+    fistp word [v_int]
+.increment_px_py:
+    fsincos
+    fsubp st3, st0           ; px - cos(v)
+    fsubp                    ; py - sin(v)
+    fst dword [f_py]
+    fistp word [py_int]
+    fst dword [f_px]
+    fistp word [px_int]
 update_image:
     %ifdef DOS
 .map_to_screen:
@@ -124,12 +142,6 @@ update_image:
     add ax, bx
     mov [array_index], ax
     %endif
-.calculate_color:
-.load_uv:
-    fld dword [f_v]
-    fdiv dword [checkerboard_size]
-    fistp word [v_int]
-
 .apply_pattern:
     xor ax, ax
     mov al, [u_int]
@@ -142,25 +154,7 @@ update_image:
     mov word [color], ax
 .draw_pixel:
     call draw_pixel
-    jmp .exit
 .exit:
-
-increment_point:
-    fld dword [f_px]
-    fld dword [f_py]
-    fld dword [f_v]
-.increment_v:
-    fadd dword [f_v_step]
-    fst dword [f_v]
-    fadd dword [offset]
-.increment_px_py:
-    fsincos
-    fsubp st3, st0           ; px - cos(v)
-    fsubp                    ; py - sin(v)
-    fst dword [f_py]
-    fistp word [py_int]
-    fst dword [f_px]
-    fistp word [px_int]
     popa
     ret
 
