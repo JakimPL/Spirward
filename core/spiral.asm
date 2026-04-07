@@ -40,24 +40,23 @@ do_u_step:
 calculate_uv_values:
 .v:
     fldz
-    fstp dword [f_v]
-.v_step:                     ; v_step ← 2π / i
+    fstp dword [f_v]         ; v ← 0
+.v_step:
     fldpi
-    fadd st0, st0            ; 2π
+    fadd st0, st0
     fidiv word [i]
-    fstp dword [f_v_step]
-.u:                          ; u ← v_step × focal_length
-    fld dword [f_v_step]
-    fimul word [focal_length] ; TODO: reduce precision
+    fstp dword [f_v_step]    ; v_step ← 2π / i
+.u:
+    fimul word [focal_length]
 ; frndint
-    fst dword [f_u]
+    fst dword [f_u]          ; u ← v_step × focal_length
     fld st0
     fld st0
     fdiv dword [checkerboard_size]
     fistp word [u_int]
-.depth:                      ; depth ← u * u
+.depth:
     fmul st0, st0
-    fistp word [depth]
+    fistp word [depth]       ; depth ← u * u
 
 .calculate_light:
     mov ax, [depth]
@@ -106,8 +105,8 @@ increment_point:
     fistp word [v_int]
 .increment_px_py:
     fsincos
-    fsubp st3, st0           ; px - cos(v)
-    fsubp                    ; py - sin(v)
+    fsubp st3, st0           ; px ← px - cos(v)
+    fsubp                    ; py ← py - sin(v)
     fst dword [f_py]
     fistp word [py_int]
     fst dword [f_px]
@@ -148,15 +147,15 @@ update_image:
     and al, 0x01
 .apply_lighting:
     mul word [light]
-%ifdef DOS
+    %ifdef DOS
     mov bx, [array_index]
     mov [es:bx], al
-%endif
-%ifdef LINUX
+    %endif
+    %ifdef LINUX
     mov [color], ax
 .draw_pixel:
     call draw_pixel
-%endif
+    %endif
 .exit:
     popa
     ret
