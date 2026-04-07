@@ -148,9 +148,15 @@ update_image:
     and al, 0x01
 .apply_lighting:
     mul word [light]
+%ifdef DOS
+    mov bx, [array_index]
+    mov [es:bx], al
+%endif
+%ifdef LINUX
     mov [color], ax
 .draw_pixel:
     call draw_pixel
+%endif
 .exit:
     popa
     ret

@@ -1,3 +1,12 @@
+    VIDEO_MODE_13H equ 0x13
+    TEXT_MODE_3H equ 0x03
+    BIOS_VIDEO_INTERRUPT equ 0x10
+    KEYBOARD_INTERRUPT equ 0x16
+    VIDEO_MEMORY_SEGMENT equ 0xA000
+    PALETTE_INDEX_PORT equ 0x03C8
+    VGA_INPUT_STATUS_REGISTER equ 0x3DA
+    VERTICAL_RETRACE_STATUS_BIT equ 0x08
+
     org 100h
 
 start:
@@ -24,7 +33,15 @@ palette_loop:
 
 main_loop:
 .wait_for_retrace:
-    call wait_for_retrace
+    mov dx, VGA_INPUT_STATUS_REGISTER
+.wait_end:
+    in al, dx
+    test al, VERTICAL_RETRACE_STATUS_BIT
+    jnz .wait_end
+.wait_start:
+    in al, dx
+    test al, VERTICAL_RETRACE_STATUS_BIT
+    jz .wait_start
 .draw_spiral:
     call draw
 .check_input:
@@ -40,5 +57,4 @@ main_loop:
     int BIOS_VIDEO_INTERRUPT
     ret
 
-    %include "core/dos.asm"
     %include "core/spiral.asm"
