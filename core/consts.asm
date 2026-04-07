@@ -22,3 +22,9 @@ focal_length:
     dw 85
 checkerboard_size:
     dd 0.785398185253143311
+
+; to optimize
+attenuation_a:
+    dw -4
+attenuation_b:
+    dw 800

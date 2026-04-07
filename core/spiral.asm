@@ -45,28 +45,22 @@ calculate_uv_values:
     fldpi
     fadd st0, st0
     fidiv word [i]
-    fstp dword [f_v_step]    ; v_step ← 2π / i
+    fst dword [f_v_step]     ; v_step ← 2π / i
 .u:
-    fimul word [focal_length]
+    fimul word [focal_length] ; u ← v_step × focal_length
 ; frndint
-    fst dword [f_u]          ; u ← v_step × focal_length
+; fst dword [f_u]
     fld st0
     fld st0
     fdiv dword [checkerboard_size]
     fistp word [u_int]
 .depth:
-    fmul st0, st0
-    fistp word [depth]       ; depth ← u * u
+    fmul st0, st0            ; depth ← u * u
 
 .calculate_light:
-    mov ax, [depth]
-    shr ax, 2
-    add ax, 3
-    mov bx, 1024
-    xchg ax, bx
-    xor dx, dx
-    div bx
-    mov word [light], ax
+    fiadd word [attenuation_a]
+    fidivr word [attenuation_b]
+    fistp word [light]       ; light ← b / (a + u * u)
 
 calculate_initial_point:
     fadd dword [offset]
@@ -75,11 +69,11 @@ calculate_initial_point:
 .py:
     fadd st0, st0            ; optimize 2x
     fdiv dword [f_v_step]
-    fstp dword [f_py]
+    fstp dword [f_py]        ; py ← 2 sin u / v_step
 .px:
     fadd st0, st0
     fdiv dword [f_v_step]
-    fstp dword [f_px]
+    fstp dword [f_px]        ; px ← 2 cos u / v_step
 .v:
     mov cl, byte [i]
 .v_loop:
