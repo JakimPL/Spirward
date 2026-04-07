@@ -29,7 +29,7 @@ draw_spiral:
     jmp .loop_start
 increment_offset:
     fld1
-    fdiv dword [focal_length]
+    fidiv word [focal_length]
     fadd dword [offset]
     fstp dword [offset]
     popa
@@ -42,12 +42,13 @@ calculate_uv_values:
     fldz
     fstp dword [f_v]
 .v_step:                     ; v_step ← 2π / i
-    fld dword [two_pi]       ; fldpi?
+    fldpi
+    fadd st0, st0            ; 2π
     fidiv word [i]
     fstp dword [f_v_step]
 .u:                          ; u ← v_step × focal_length
     fld dword [f_v_step]
-    fmul dword [focal_length] ; TODO: reduce precision
+    fimul word [focal_length] ; TODO: reduce precision
 ; frndint
     fst dword [f_u]
     fld st0
@@ -91,7 +92,6 @@ calculate_initial_point:
 
 do_v_step:
     pusha
-
 increment_point:
     fld dword [f_px]
     fld dword [f_py]
@@ -143,15 +143,12 @@ update_image:
     mov [array_index], ax
     %endif
 .apply_pattern:
-    xor ax, ax
     mov al, [u_int]
     xor al, [v_int]
     and al, 0x01
-    mov [color], ax
 .apply_lighting:
-    mov bx, word [light]
-    mul bx
-    mov word [color], ax
+    mul word [light]
+    mov [color], ax
 .draw_pixel:
     call draw_pixel
 .exit:

@@ -19,9 +19,6 @@
 
     section .data
 focal_length:
-    dd 85.0
+    dw 85
 checkerboard_size:
     dd 0.785398185253143311
-
-two_pi:
-    dd 6.28318530717958647692

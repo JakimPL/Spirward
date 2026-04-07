@@ -8,10 +8,6 @@
 
     section .text
 draw_pixel:
-    pusha
-    push VIDEO_MEMORY_SEGMENT
-    pop es
-
     mov bx, [array_index]
     mov cl, [color]
     mov [es:bx], cl
@@ -20,7 +16,6 @@ draw_pixel:
 ; mov [es:bx+REAL_SCREEN_WIDTH-1], cl
 ; mov [es:bx+REAL_SCREEN_WIDTH], cl
 ; mov [es:bx+REAL_SCREEN_WIDTH+1], cl
-    popa
     ret
 
 wait_for_retrace:
