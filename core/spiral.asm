@@ -19,14 +19,14 @@ clear_buffers:
 
 draw_spiral:
     pusha
-    mov ax, U_MIN
+    mov al, U_MIN
+    xor ah, ah
 .loop_start:
-    cmp al, U_MAX
-    ja increment_offset
-    mov word [i], ax
+    mov [i], ax
     call do_u_step
     inc al
-    jmp .loop_start
+    cmp al, U_MAX + 1
+    jb .loop_start
 increment_offset:
     fld1
     fidiv word [focal_length]
