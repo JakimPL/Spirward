@@ -18,20 +18,12 @@ color:
     resw 1
 light:
     resw 1
-depth:
-    resw 1
 f_px:
     resd 1
-px:
-    resw 1
 f_py:
     resd 1
-py:
-    resw 1
 f_u:
     resd 1
-u:
-    resw 1
 f_v:
     resd 1
 v:
@@ -44,8 +36,11 @@ offset:
     resd 1
 i:
     resw 1
+
+%ifdef LINUX
 array_index:
     resw 1
+%endif
 
 px_int:
     resw 1

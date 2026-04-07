@@ -51,10 +51,10 @@ calculate_uv_values:
 ; frndint
 ; fst dword [f_u]
     fld st0
-    fld st0
     fdiv dword [checkerboard_size]
     fistp word [u_int]
 .depth:
+    fld st0
     fmul st0, st0            ; depth ← u * u
 
 .calculate_light:
@@ -119,7 +119,7 @@ update_image:
 ; jae .exit
     add ax, bx
     shl ax, 1
-    mov [array_index], ax
+    mov bx, ax
     %endif
     %ifdef LINUX
 .map_to_screen:
@@ -142,8 +142,8 @@ update_image:
 .apply_lighting:
     mul word [light]
     %ifdef DOS
-    mov bx, [array_index]
-    mov [es:bx], al
+    mov ah, al
+    mov [es:bx], ax
     %endif
     %ifdef LINUX
     mov [color], ax
