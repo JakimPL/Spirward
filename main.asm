@@ -49,12 +49,8 @@ main_loop:
     int KEYBOARD_INTERRUPT
     jz main_loop
 
-    xor ax, ax
-    int KEYBOARD_INTERRUPT
-
 .return_to_dos:
     mov ax, TEXT_MODE_3H
     int BIOS_VIDEO_INTERRUPT
-    ret
 
     %include "core/spiral.asm"
