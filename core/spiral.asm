@@ -30,8 +30,9 @@ draw_spiral:
 increment_offset:
     fld1
     fidiv word [focal_length]
-    fadd dword [offset]
-    fstp dword [offset]
+    mov edi, offset
+    fadd dword [edi]
+    fstp dword [edi]
     popa
     ret
 
@@ -64,12 +65,13 @@ calculate_uv_values:
 calculate_initial_point:
     fadd dword [offset]      ; u ← u + offset
 .sincos:
+    mov edi, f_v_step
     fsincos
 .py:
-    fdiv dword [f_v_step]    ; py ← sin u / v_step
+    fdiv dword [edi]         ; py ← sin u / v_step
 .px:
     fxch st0, st1
-    fdiv dword [f_v_step]    ; px ← cos u / v_step
+    fdiv dword [edi]         ; px ← cos u / v_step
     fxch st0, st1
 .v:
     mov cl, byte [i]
