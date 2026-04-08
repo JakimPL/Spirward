@@ -39,7 +39,7 @@ do_u_step:
     pusha
 calculate_uv_values:
 .v:
-    fldz
+    fld dword [offset]       ; v ← offset
     fstp dword [f_v]         ; v ← 0
 .v_step:
     fldpi
@@ -48,7 +48,7 @@ calculate_uv_values:
     fst dword [f_v_step]     ; v_step ← 2π / i
 .u:
     fimul word [focal_length] ; u ← v_step × focal_length
-; frndint ; snap to integer for a cylindrical effect
+    ; frndint ; snap to integer for a cylindrical effect
 .u_int:
     fld st0
     fdiv dword [checkerboard_size]
@@ -69,11 +69,12 @@ calculate_initial_point:
 .py:
     fadd st0, st0            ; optimize 2x
     fdiv dword [f_v_step]
-    fstp dword [f_py]        ; py ← 2 sin u / v_step
+    fst dword [f_py]        ; py ← 2 sin u / v_step
 .px:
+    fxch st0, st1
     fadd st0, st0
     fdiv dword [f_v_step]
-    fstp dword [f_px]        ; px ← 2 cos u / v_step
+    fst dword [f_px]        ; px ← 2 cos u / v_step
 .v:
     mov cl, byte [i]
 .v_loop:
@@ -81,18 +82,19 @@ calculate_initial_point:
     loop .v_loop
 .exit:
     popa
+    fstp st0
+    fstp st0
     ret
 
 do_v_step:
     pusha
 increment_point:
-    fld dword [f_px]
-    fld dword [f_py]
+    ; fld dword [f_px]
+    ; fld dword [f_py]
     fld dword [f_v]
 .increment_v:
     fadd dword [f_v_step]
     fst dword [f_v]
-    fadd dword [offset]      ; v ← v + v_step + offset
 .checkerboard_v:
     fld st0
     fdiv dword [checkerboard_size]
@@ -102,9 +104,11 @@ increment_point:
     fsubp st3, st0           ; px ← px - cos(v)
     fsubp                    ; py ← py - sin(v)
     fst dword [f_py]
-    fistp word [py_int]
+    fist word [py_int]
+    fxch st0, st1
     fst dword [f_px]
-    fistp word [px_int]
+    fist word [px_int]
+    fxch st0, st1
 
 update_image:
 .map_to_screen:
