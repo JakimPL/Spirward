@@ -22,6 +22,16 @@ draw_spiral:
 .increment_offset:
     fld1
     fidiv word [focal_length] ; offset ← 1 / focal_length
+%ifdef DOS
+    mov si, offset
+    fadd dword [si]
+    fst dword [si]
+%endif
+%ifdef LINUX
+    mov esi, offset
+    fadd dword [esi]
+    fst dword [esi]
+%endif
 .loop_init:
     mov al, U_MIN
     xor ah, ah
@@ -38,10 +48,16 @@ draw_spiral:
 
 do_u_step:
     pusha
-    mov edi, f_v
 calculate_uv_values:
 .v:
-    fst dword [edi]          ; v ← offset
+%ifdef DOS
+    mov di, f_v
+    fst dword [di]  ; v ← offset
+%endif
+%ifdef LINUX
+    mov edi, f_v
+    fst dword [edi]  ; v ← offset
+%endif
 .v_step:
     fldpi
     fidiv word [i]
@@ -71,15 +87,16 @@ calculate_initial_point:
 .u_sincos:
     fsincos
 .py:
-    fdiv st2                 ; py ← sin u / v_step
+    fdiv st2         ; py ← sin u / v_step
 .px:
     fxch st2
-    fdivp st1                ; px ← cos u / v_step
+    fdivp st1         ; px ← cos u / v_step
     fxch
     mov cl, byte [i]
+    
 v_loop:
     call do_v_step
-; loop .v_loop
+    loop v_loop
 .exit:
     popa
     fstp st0
@@ -91,8 +108,14 @@ do_v_step:
     pusha
 .increment_v:
     fld st2
+%ifdef DOS
+    fadd dword [di]
+    fst dword [di]; v ← v + 2 * v_step
+%endif
+%ifdef LINUX
     fadd dword [edi]
-    fst dword [edi]          ; v ← v + 2 * v_step
+    fst dword [edi]; v ← v + 2 * v_step
+%endif
 .checkerboard_v:
     fld st0
     fdiv dword [checkerboard_size]
