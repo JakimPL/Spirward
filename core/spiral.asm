@@ -48,8 +48,8 @@ calculate_uv_values:
     fst dword [f_v_step]     ; v_step ← 2π / i
 .u:
     fimul word [focal_length] ; u ← v_step × focal_length
-; frndint
-; fst dword [f_u]
+; frndint ; snap to integer for a cylindrical effect
+.u_int:
     fld st0
     fdiv dword [checkerboard_size]
     fistp word [u_int]       ; checkerboard_u ← floor(u / checkerboard_size)
@@ -107,32 +107,17 @@ increment_point:
     fistp word [px_int]
 
 update_image:
-    %ifdef DOS
 .map_to_screen:
     mov ax, [py_int]
 ; cmp ax, REAL_SCREEN_HEIGHT ; remove?
 ; jae .exit
     imul ax, REAL_SCREEN_WIDTH
     add ax, [px_int]
-    ; add bx, HALF_SCREEN_WIDTH
-; cmp bl, SCREEN_WIDTH
+; cmp bl, REAL_SCREEN_WIDTH
 ; jae .exit
-    ; shl ax, 1
-    add ax, 32160
+    add ax, CENTER_OFFSET
     mov bx, ax
-    %endif
     %ifdef LINUX
-.map_to_screen:
-    mov ax, [py_int]
-    add ax, HALF_SCREEN_HEIGHT
-    cmp ax, SCREEN_HEIGHT
-    jae .exit
-    imul ax, SCREEN_WIDTH
-    mov bx, [px_int]
-    add bx, HALF_SCREEN_WIDTH
-    cmp bx, SCREEN_WIDTH
-    jae .exit
-    add ax, bx
     mov [array_index], ax
     %endif
 .apply_pattern:

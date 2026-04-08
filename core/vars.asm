@@ -37,11 +37,6 @@ offset:
 i:
     resw 1
 
-%ifdef LINUX
-array_index:
-    resw 1
-%endif
-
 px_int:
     resw 1
 py_int:
@@ -52,6 +47,8 @@ v_int:
     resw 1
 
     %ifdef LINUX
+array_index:
+    resw 1
 image:
-    resw BUFFER_SIZE
+    resw VIDEO_BUFFER_SIZE
     %endif
