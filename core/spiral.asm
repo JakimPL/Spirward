@@ -52,7 +52,7 @@ calculate_uv_values:
 ; fst dword [f_u]
     fld st0
     fdiv dword [checkerboard_size]
-    fistp word [u_int]
+    fistp word [u_int]       ; checkerboard_u ← floor(u / checkerboard_size)
 .depth:
     fld st0
     fmul st0, st0            ; depth ← u * u
@@ -63,7 +63,7 @@ calculate_uv_values:
     fistp word [light]       ; light ← b / (a + u * u)
 
 calculate_initial_point:
-    fadd dword [offset]
+    fadd dword [offset]      ; u ← u + offset
 .sincos:
     fsincos
 .py:
@@ -92,11 +92,11 @@ increment_point:
 .increment_v:
     fadd dword [f_v_step]
     fst dword [f_v]
-    fadd dword [offset]
+    fadd dword [offset]      ; v ← v + v_step + offset
 .checkerboard_v:
     fld st0
     fdiv dword [checkerboard_size]
-    fistp word [v_int]
+    fistp word [v_int]       ; checkerboard_v ← floor(v / checkerboard_size)
 .increment_px_py:
     fsincos
     fsubp st3, st0           ; px ← px - cos(v)
@@ -105,20 +105,20 @@ increment_point:
     fistp word [py_int]
     fst dword [f_px]
     fistp word [px_int]
+
 update_image:
     %ifdef DOS
 .map_to_screen:
     mov ax, [py_int]
-    add ax, SCREEN_HEIGHT
 ; cmp ax, REAL_SCREEN_HEIGHT ; remove?
 ; jae .exit
-    imul ax, SCREEN_WIDTH
-    mov bx, [px_int]
-    add bx, HALF_SCREEN_WIDTH
+    imul ax, REAL_SCREEN_WIDTH
+    add ax, [px_int]
+    ; add bx, HALF_SCREEN_WIDTH
 ; cmp bl, SCREEN_WIDTH
 ; jae .exit
-    add ax, bx
-    shl ax, 1
+    ; shl ax, 1
+    add ax, 32160
     mov bx, ax
     %endif
     %ifdef LINUX
