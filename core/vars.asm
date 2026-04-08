@@ -18,10 +18,6 @@ color:
     resw 1
 light:
     resw 1
-f_px:
-    resd 1
-f_py:
-    resd 1
 f_u:
     resd 1
 f_v:

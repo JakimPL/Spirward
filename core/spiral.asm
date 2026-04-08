@@ -48,7 +48,7 @@ calculate_uv_values:
     fst dword [f_v_step]     ; v_step ← 2π / i
 .u:
     fimul word [focal_length] ; u ← v_step × focal_length
-    ; frndint ; snap to integer for a cylindrical effect
+; frndint ; snap to integer for a cylindrical effect
 .u_int:
     fld st0
     fdiv dword [checkerboard_size]
@@ -68,13 +68,12 @@ calculate_initial_point:
     fsincos
 .py:
     fadd st0, st0            ; optimize 2x
-    fdiv dword [f_v_step]
-    fst dword [f_py]        ; py ← 2 sin u / v_step
+    fdiv dword [f_v_step]    ; py ← 2 sin u / v_step
 .px:
     fxch st0, st1
     fadd st0, st0
-    fdiv dword [f_v_step]
-    fst dword [f_px]        ; px ← 2 cos u / v_step
+    fdiv dword [f_v_step]    ; px ← 2 cos u / v_step
+    fxch st0, st1
 .v:
     mov cl, byte [i]
 .v_loop:
@@ -89,8 +88,6 @@ calculate_initial_point:
 do_v_step:
     pusha
 increment_point:
-    ; fld dword [f_px]
-    ; fld dword [f_py]
     fld dword [f_v]
 .increment_v:
     fadd dword [f_v_step]
@@ -101,13 +98,11 @@ increment_point:
     fistp word [v_int]       ; checkerboard_v ← floor(v / checkerboard_size)
 .increment_px_py:
     fsincos
-    fsubp st3, st0           ; px ← px - cos(v)
-    fsubp                    ; py ← py - sin(v)
-    fst dword [f_py]
-    fist word [py_int]
-    fxch st0, st1
-    fst dword [f_px]
+    fsubp st3, st0           ; py ← py - sin(v)
+    fsubp                    ; px ← px - cos(v)
     fist word [px_int]
+    fxch st0, st1
+    fist word [py_int]
     fxch st0, st1
 
 update_image:
