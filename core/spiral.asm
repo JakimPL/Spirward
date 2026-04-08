@@ -43,9 +43,8 @@ calculate_uv_values:
     fstp dword [f_v]         ; v ← 0
 .v_step:
     fldpi
-    fadd st0, st0
     fidiv word [i]
-    fst dword [f_v_step]     ; v_step ← 2π / i
+    fst dword [f_v_step]     ; v_step ← π / i
 .u:
     fimul word [focal_length] ; u ← v_step × focal_length
 ; frndint ; snap to integer for a cylindrical effect
@@ -67,12 +66,10 @@ calculate_initial_point:
 .sincos:
     fsincos
 .py:
-    fadd st0, st0            ; optimize 2x
-    fdiv dword [f_v_step]    ; py ← 2 sin u / v_step
+    fdiv dword [f_v_step]    ; py ← sin u / v_step
 .px:
     fxch st0, st1
-    fadd st0, st0
-    fdiv dword [f_v_step]    ; px ← 2 cos u / v_step
+    fdiv dword [f_v_step]    ; px ← cos u / v_step
     fxch st0, st1
 .v:
     mov cl, byte [i]
@@ -87,11 +84,11 @@ calculate_initial_point:
 
 do_v_step:
     pusha
-increment_point:
-    fld dword [f_v]
 .increment_v:
-    fadd dword [f_v_step]
-    fst dword [f_v]
+    fld dword [f_v_step]
+    fadd st0, st0
+    fadd dword [f_v]
+    fst dword [f_v]          ; v ← v + 2 * v_step
 .checkerboard_v:
     fld st0
     fdiv dword [checkerboard_size]
