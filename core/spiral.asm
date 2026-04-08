@@ -19,6 +19,10 @@ clear_buffers:
 
 draw_spiral:
     pusha
+.increment_offset:
+    fld1
+    fidiv word [focal_length] ; offset ← 1 / focal_length
+.loop_init:
     mov al, U_MIN
     xor ah, ah
 .loop_start:
@@ -27,26 +31,26 @@ draw_spiral:
     inc al
     cmp al, U_MAX + 1
     jb .loop_start
-increment_offset:
-    fld1
-    fidiv word [focal_length]
-    mov edi, offset
-    fadd dword [edi]
-    fstp dword [edi]
+.exit:
+    fstp st0
     popa
     ret
 
 do_u_step:
     pusha
+    mov edi, f_v
 calculate_uv_values:
 .v:
-    fld dword [offset]       ; v ← offset
-    fstp dword [f_v]         ; v ← 0
+    fst dword [edi]          ; v ← offset
 .v_step:
     fldpi
     fidiv word [i]
-    fst dword [f_v_step]     ; v_step ← π / i
+.v_step_2x:
+    fld st0
+    fadd st0, st0
+    fxch
 .u:
+    fld st0
     fimul word [focal_length] ; u ← v_step × focal_length
 ; frndint ; snap to integer for a cylindrical effect
 .u_int:
@@ -63,23 +67,22 @@ calculate_uv_values:
     fistp word [light]       ; light ← b / (a + u * u)
 
 calculate_initial_point:
-    fadd dword [offset]      ; u ← u + offset
-.sincos:
-    mov edi, f_v_step
+    fadd st0, st3            ; u ← u + offset
+.u_sincos:
     fsincos
 .py:
-    fdiv dword [edi]         ; py ← sin u / v_step
+    fdiv st2                 ; py ← sin u / v_step
 .px:
-    fxch st0, st1
-    fdiv dword [edi]         ; px ← cos u / v_step
-    fxch st0, st1
-.v:
+    fxch st2
+    fdivp st1                ; px ← cos u / v_step
+    fxch
     mov cl, byte [i]
-.v_loop:
+v_loop:
     call do_v_step
-    loop .v_loop
+; loop .v_loop
 .exit:
     popa
+    fstp st0
     fstp st0
     fstp st0
     ret
@@ -87,10 +90,9 @@ calculate_initial_point:
 do_v_step:
     pusha
 .increment_v:
-    fld dword [f_v_step]
-    fadd st0, st0
-    fadd dword [f_v]
-    fst dword [f_v]          ; v ← v + 2 * v_step
+    fld st2
+    fadd dword [edi]
+    fst dword [edi]          ; v ← v + 2 * v_step
 .checkerboard_v:
     fld st0
     fdiv dword [checkerboard_size]
@@ -98,11 +100,11 @@ do_v_step:
 .increment_px_py:
     fsincos
     fsubp st3, st0           ; py ← py - sin(v)
-    fsubp                    ; px ← px - cos(v)
+    fsubp st1, st0           ; px ← px - cos(v)
     fist word [px_int]
-    fxch st0, st1
+    fxch
     fist word [py_int]
-    fxch st0, st1
+    fxch
 
 update_image:
 .map_to_screen:

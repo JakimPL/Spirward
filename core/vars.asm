@@ -22,8 +22,6 @@ f_u:
     resd 1
 f_v:
     resd 1
-v:
-    resw 1
 f_v_step:
     resd 1
 v_step:
