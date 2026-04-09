@@ -34,19 +34,13 @@ draw_spiral:
     %endif
 .loop_init:
     mov al, U_MIN
-    xor ah, ah
-.loop_start:
-    mov [i], ax
-    call do_u_step
-    inc al
-    cmp al, U_MAX + 1
-    jb .loop_start
-.exit:
-    fstp st0
-    popa
-    ret
+; xor ah, ah
 
-do_u_step:
+; for u = U_MIN to U_MAX
+u_loop_start:
+    mov [i], ax
+
+u_loop:
     pusha
 calculate_uv_values:
 .v:
@@ -70,7 +64,7 @@ calculate_uv_values:
     fimul word [focal_length]          ; u ← v_step × focal_length
 ; frndint                            ; snap to integer for a cylindrical effect
 .u_int:
-    fist word [u_int]                 ; checkerboard_u ← ⌊u⌋
+    fist word [u_int]                  ; checkerboard_u ← ⌊u⌋
 .depth:
     fld st0
     fmul st0, st0                      ; depth ← u * u
@@ -90,9 +84,11 @@ calculate_initial_point:
     fxch st2
     fdivp st1                          ; px ← cos u / v_step
     fxch
-    mov cl, byte [i]
 
 ; for v = 0 to i - 1
+v_loop_start:
+    mov cl, byte [i]
+
 v_loop:
 .increment_v:
     fld st2
@@ -113,7 +109,7 @@ v_loop:
     fadd dword [si]
     %endif
     %ifdef LINUX
-    fadd dword [esi]                   
+    fadd dword [esi]
     %endif
     fsincos
     fsubp st3, st0                     ; py ← py - cos(v + offset)
@@ -150,9 +146,10 @@ update_image:
     %ifdef LINUX
     mov [color], ax
 .draw_pixel:
+    push cx
     call draw_pixel
+    pop cx
     %endif
-; end for v    
 
     loop v_loop
 v_loop_exit:
@@ -160,6 +157,17 @@ v_loop_exit:
     fstp st0
     fstp st0
     fstp st0
+; end for v
+
+u_loop_exit:
+    inc al
+    cmp al, U_MAX + 1
+    jb u_loop_start
+; end for u
+
+draw_exit:
+    fstp st0
+    popa
     ret
 
     %include "core/consts.asm"
