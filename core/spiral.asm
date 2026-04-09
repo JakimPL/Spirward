@@ -59,11 +59,21 @@ calculate_uv_values:
 .u:
     fld st0
     fimul word [focal_length]          ; u ← v_step × focal_length
-    frndint                            ; snap to integer for a cylindrical effect
+    fld st0
+    frndint                            ; snap to integer for a cylindrical effect    
 .u_int:
     fist word [u_int]                  ; checkerboard_u ← ⌊u⌋
 
+.u_combined:
+    fsub st0, st1                     
+    fld st4
+    fsin
+    fabs
+    fmulp st1, st0                   
+    faddp st1, st0                     ; u ← u + (⌊u⌋ - u) × |sin(offset)|
+
 .calculate_light:
+    fld st0
     fadd dword [attenuation_a]
     fdivr dword [attenuation_b]
     fistp word [light]                 ; light ← b / (a + u)
