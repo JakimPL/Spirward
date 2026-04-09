@@ -3,6 +3,7 @@
 *.txt
 *.md
 
+*.lst
 *.bin
 *.o
 *.com

@@ -82,8 +82,15 @@ $(DOS_OUT): $(MAIN_SRC) $(SPIRAL_SOURCES) $(DOS_SRC) $(SPIRAL_ASM_OBJ_DOS)
 com: $(COM_OUT)
 
 $(COM_OUT): $(COM_SRC)
-	$(ASM) $(ASMFLAGS_COM) $< -o $@
+	$(ASM) $(ASMFLAGS_COM) $< -o $@ -l $(basename $@).lst
+	@./show-sizes.sh $(basename $@).lst
 	@echo "COM build complete: $(COM_OUT) ($$(stat -c%s $@) bytes)"
+	@echo "Listing with sizes: $(basename $@).lst"
+
+# Show instruction sizes from listing
+.PHONY: sizes
+sizes: com
+	@./show-sizes.sh $(basename $(COM_OUT)).lst
 
 # Run Linux version
 .PHONY: run
@@ -103,6 +110,7 @@ help:
 	@echo "  make linux       - Build for Linux with SDL2"
 	@echo "  make dos         - Cross-compile for DOS with DJGPP"
 	@echo "  make com         - Assemble standalone .com file"
+	@echo "  make sizes       - Show instruction sizes from .lst file"
 	@echo "  make run         - Build and run Linux version"
 	@echo "  make clean       - Remove build artifacts"
 	@echo "  make all         - Build all targets"

@@ -1,16 +1,6 @@
     section .text
+draw:
 clear_buffers:
-    pusha
-.clear_depth_buffer:
-    %ifdef DOS
-    mov di, depth_buffer
-    %endif
-    %ifdef LINUX
-    mov edi, depth_buffer
-    %endif
-    mov ax, 0x7FFF
-    mov cx, BUFFER_SIZE
-    rep stosw
 .clear_video_buffer:
     %ifdef DOS
     push VIDEO_MEMORY_SEGMENT
@@ -26,176 +16,158 @@ clear_buffers:
     mov ecx, BUFFER_SIZE
     rep stosb
     %endif
-.exit:
-    popa
-    ret
 
 draw_spiral:
-    mov word [i], 0x01
-.loop_start:
-    cmp word [i], U_STEPS
-    jg .loop_end
-    call do_u_step
-    inc word [i]
-    jmp .loop_start
-.loop_end:
-    ret
+    pusha
+.increment_offset:
+    fld1
+    fidiv word [focal_length]          ; offset_delta ← 1 / focal_length
+    %ifdef DOS
+    mov si, offset
+    fadd dword [si]
+    fst dword [si]                     ; offset ← offset + offset_delta
+    %endif
+    %ifdef LINUX
+    mov esi, offset
+    fadd dword [esi]
+    fst dword [esi]                    ; offset ← offset + offset_delta
+    %endif
+.loop_init:
+    mov al, U_MIN
+; xor ah, ah
 
-do_u_step:
+; for u = U_MIN to U_MAX
+u_loop_start:
+    mov [i], ax
+
+u_loop:
     pusha
 calculate_uv_values:
 .v:
-    fldz
-    fstp dword [v]
-.v_step:                     ; v_step ← 2π / i
-    fld dword [two_pi]
-    fidiv word [i]
-    fst dword [v_step]
-.u:                          ; u ← v_step × focal_length
-    fmul dword [focal_length]
-    fst dword [u]
-.depth:                      ; depth ← u * u
+    %ifdef DOS
+    mov di, f_v
+    fst dword [di]                     ; v ← offset
+    %endif
+    %ifdef LINUX
+    mov edi, f_v
+    fst dword [edi]                    ; v ← offset
+    %endif
+.v_step:
+    fldpi
+    fidiv word [i]                     ; v_step ← π / i
+.v_step_2x:
     fld st0
-    fmul st0
-.check_depth:
-    ficom word [max_depth]
-    fstsw ax
-    sahf
-    jae update_image.exit_pop
-.save_depth:
-    fistp word [depth]
+    fadd st0, st0                      ; v_step_2x ← 2π / i
+    fxch
+.u:
+    fld st0
+    fimul word [focal_length]          ; u ← v_step × focal_length
+; frndint                            ; snap to integer for a cylindrical effect
+.u_int:
+    fist word [u_int]                  ; checkerboard_u ← ⌊u⌋
+.depth:
+    fld st0
+    fmul st0, st0                      ; depth ← u * u
+
 .calculate_light:
-    fmul dword [attenuation]
-    fld1
-    faddp
-    fld dword [w255]
-    fdivr
-    fstp dword [light]
+    fiadd word [attenuation_a]
+    fidivr word [attenuation_b]
+    fistp word [light]                 ; light ← b / (a + u * u)
+
 calculate_initial_point:
-    fld dword [u]
-    fadd dword [offset]
-.sincos:
+    fadd st0, st3                      ; u ← u + offset
+.u_sincos:
     fsincos
 .py:
-    fadd st0, st0
-    fdiv dword [v_step]
-    fiadd word [half_spiral_screen_height]
-    fstp dword [py]
+    fdiv st2                           ; py ← sin u / v_step
 .px:
-    fadd st0, st0
-    fdiv dword [v_step]
-    fiadd word [half_spiral_screen_width]
-    fstp dword [px]
-.v:
-    mov cl, byte [i]
-.v_loop:
-    call do_v_step
-    loop .v_loop
-.exit:
-    popa
-    ret
+    fxch st2
+    fdivp st1                          ; px ← cos u / v_step
+    fxch
 
-do_v_step:
-    pusha
-    call update_image
-    call increment_point
-    popa
-    ret
+; for v = 0 to i - 1
+v_loop_start:
+    mov cl, byte [i]
+
+v_loop:
+.increment_v:
+    fld st2
+    %ifdef DOS
+    fadd dword [di]
+    fst dword [di]                     ; v ← v + 2 * v_step
+    %endif
+    %ifdef LINUX
+    fadd dword [edi]
+    fst dword [edi]                    ; v ← v + 2 * v_step
+    %endif
+.checkerboard_v:
+    fld st0
+    fdiv dword [checkerboard_size]
+    fistp word [v_int]                 ; checkerboard_v ← ⌊v / checkerboard_size⌋
+.increment_px_py:                      ; double v rotation
+    %ifdef DOS
+    fadd dword [si]
+    %endif
+    %ifdef LINUX
+    fadd dword [esi]
+    %endif
+    fsincos
+    fsubp st3, st0                     ; py ← py - cos(v + offset)
+    fsubp st1, st0                     ; px ← px - sin(v + offset)
+    fist word [px_int]
+    fxch
+    fist word [py_int]
+    fxch
 
 update_image:
-    pusha
-.get_index:
-    fld dword [px]
-    frndint
-    fistp word [px_int]
-    fld dword [py]
-    frndint
-    fistp word [py_int]
+.map_to_screen:
     mov ax, [py_int]
-    imul ax, SCREEN_WIDTH
+; cmp ax, REAL_SCREEN_HEIGHT ; remove?
+; jae .exit
+    imul ax, REAL_SCREEN_WIDTH
     add ax, [px_int]
+; cmp bl, REAL_SCREEN_WIDTH
+; jae .exit
+    add ax, CENTER_OFFSET
+    mov bx, ax
+    %ifdef LINUX
     mov [array_index], ax
-.check_bounds:
-    cmp word [px_int], SCREEN_WIDTH
-    jae .exit
-    cmp word [py_int], SCREEN_HEIGHT
-    jae .exit
-.check_depth:
-; %ifdef DOS
-; xor bx, bx
-; %endif
-; %ifdef LINUX
-; xor ebx, ebx
-; %endif
-; mov bx, [array_index]
-; %ifdef DOS
-; shl bx, 1
-; %endif
-; fld dword [depth]
-; %ifdef DOS
-; ficom word [depth_buffer + bx]
-; %endif
-; %ifdef LINUX
-; ficom word [depth_buffer + 2 * ebx]
-; %endif
-; fstsw ax
-; sahf
-; jae .exit_pop
-; %ifdef DOS
-; fistp dword [depth_buffer + bx]
-; %endif
-; %ifdef LINUX
-; fistp dword [depth_buffer + 2 * ebx]
-; %endif
-.calculate_color:
-.load_uv:
-    fld dword [u]
-    fdiv dword [checkerboard_size]
-    fistp word [u_int]
-    fld dword [v]
-    fdiv dword [checkerboard_size]
-    fistp word [v_int]
+    %endif
 .apply_pattern:
-    xor cx, cx
-    mov cx, [u_int]
-    xor cx, [v_int]
-    and cx, 0x01
-    mov [color], cx
+    mov al, [u_int]
+    xor al, [v_int]
+    and al, 0x01
 .apply_lighting:
-    fild word [color]
-    fadd dword [checkerboard_dark]
-    fmul dword [light]
-    fistp word [color]
+    mul word [light]
+    %ifdef DOS
+    mov ah, al
+    mov [es:bx], ax
+    %endif
+    %ifdef LINUX
+    mov [color], ax
 .draw_pixel:
+    push cx
     call draw_pixel
-    jmp .exit
-.exit_pop:
-    fstp st0
-.exit:
+    pop cx
+    %endif
+
+    loop v_loop
+v_loop_exit:
     popa
-    ret
+    fstp st0
+    fstp st0
+    fstp st0
+; end for v
 
-increment_offset:
-    fld1
-    fdiv dword [focal_length]
-    fadd dword [offset]
-    fst dword [offset]
-    ret
+u_loop_exit:
+    inc al
+    cmp al, U_MAX + 1
+    jb u_loop_start
+; end for u
 
-increment_point:
-    fld dword [px]
-    fld dword [py]
-    fld dword [v]
-.increment_v:
-    fadd dword [v_step]
-    fst dword [v]
-    fadd dword [offset]
-.increment_px_py:
-    fsincos
-    fsubp st3, st0           ; px - cos(v)
-    fsubp                    ; py - sin(v)
-    fstp dword [py]
-    fstp dword [px]
+draw_exit:
+    fstp st0
+    popa
     ret
 
     %include "core/consts.asm"

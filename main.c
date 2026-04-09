@@ -8,17 +8,15 @@
 #endif
 
 void render() {
-    for (int y = 0; y < SCREEN_HEIGHT; y++) {
-        for (int x = 0; x < SCREEN_WIDTH; x++) {
-            unsigned short array_index = y * SCREEN_WIDTH + x;
+    for (int y = 0; y < REAL_SCREEN_HEIGHT; y++) {
+        for (int x = 0; x < REAL_SCREEN_WIDTH; x++) {
+            unsigned short array_index = y * REAL_SCREEN_WIDTH + x;
             unsigned char color = image[array_index];
-            for (int dx = -1; dx <= 1; dx++) {
-                for (int dy = -1; dy <= 1; dy++) {
-                    int px = 2 * x + dx;
-                    int py = 2 * y + dy;
-                    if (px >= 0 && px < REAL_SCREEN_WIDTH && py >= 0 && py < REAL_SCREEN_HEIGHT) {
-                        video_set_pixel(px, py, color);
-                    }
+            for (int dx = 0; dx <= 0; dx++) {
+                int px = x + dx;
+                int py = y;
+                if (px >= 0 && px < REAL_SCREEN_WIDTH && py >= 0 && py < REAL_SCREEN_HEIGHT) {
+                    video_set_pixel(px, py, color);
                 }
             }
             image[array_index] = 0;
@@ -30,7 +28,6 @@ void frame() {
     draw();
     render();
     video_present();
-    increment_offset();
 }
 
 int main(void) {

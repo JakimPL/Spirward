@@ -1,19 +1,3 @@
-    global color
-    global light
-    global depth
-    global px
-    global py
-    global u
-    global v
-    global v_step
-    global offset
-    global i
-    global array_index
-    global depth_buffer
-    %ifdef LINUX
-    global image
-    %endif
-
     SCREEN_WIDTH equ 160
     SCREEN_HEIGHT equ 100
     BUFFER_SIZE equ SCREEN_WIDTH * SCREEN_HEIGHT
@@ -33,24 +17,18 @@
 color:
     resw 1
 light:
+    resw 1
+f_u:
     resd 1
-depth:
+f_v:
     resd 1
-px:
-    resd 1
-py:
-    resd 1
-u:
-    resd 1
-v:
+f_v_step:
     resd 1
 v_step:
     resd 1
 offset:
     resd 1
 i:
-    resw 1
-array_index:
     resw 1
 
 px_int:
@@ -62,9 +40,9 @@ u_int:
 v_int:
     resw 1
 
-depth_buffer:
-    resw BUFFER_SIZE
     %ifdef LINUX
+array_index:
+    resw 1
 image:
-    resw BUFFER_SIZE
+    resw VIDEO_BUFFER_SIZE
     %endif

@@ -15,7 +15,7 @@ repos:
         args:
           [
             "-ii", "4",
-            "-ci", "30"
+            "-ci", "40"
           ]
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v22.1.2
