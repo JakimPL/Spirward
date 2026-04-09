@@ -22,16 +22,16 @@ draw_spiral:
 .increment_offset:
     fld1
     fidiv word [focal_length] ; offset ← 1 / focal_length
-%ifdef DOS
+    %ifdef DOS
     mov si, offset
     fadd dword [si]
     fst dword [si]
-%endif
-%ifdef LINUX
+    %endif
+    %ifdef LINUX
     mov esi, offset
     fadd dword [esi]
     fst dword [esi]
-%endif
+    %endif
 .loop_init:
     mov al, U_MIN
     xor ah, ah
@@ -50,20 +50,20 @@ do_u_step:
     pusha
 calculate_uv_values:
 .v:
-%ifdef DOS
+    %ifdef DOS
     mov di, f_v
-    fst dword [di]  ; v ← offset
-%endif
-%ifdef LINUX
+    fst dword [di]           ; v ← offset
+    %endif
+    %ifdef LINUX
     mov edi, f_v
-    fst dword [edi]  ; v ← offset
-%endif
+    fst dword [edi]          ; v ← offset
+    %endif
 .v_step:
     fldpi
-    fidiv word [i]
+    fidiv word [i]           ; v_step ← π / i
 .v_step_2x:
     fld st0
-    fadd st0, st0
+    fadd st0, st0            ; v_step_2x ← 2π / i
     fxch
 .u:
     fld st0
@@ -72,7 +72,7 @@ calculate_uv_values:
 .u_int:
     fld st0
     fdiv dword [checkerboard_size]
-    fistp word [u_int]       ; checkerboard_u ← floor(u / checkerboard_size)
+    fistp word [u_int]       ; checkerboard_u ← ⌊u / checkerboard_size⌋
 .depth:
     fld st0
     fmul st0, st0            ; depth ← u * u
@@ -87,13 +87,13 @@ calculate_initial_point:
 .u_sincos:
     fsincos
 .py:
-    fdiv st2         ; py ← sin u / v_step
+    fdiv st2                 ; py ← sin u / v_step
 .px:
     fxch st2
-    fdivp st1         ; px ← cos u / v_step
+    fdivp st1                ; px ← cos u / v_step
     fxch
     mov cl, byte [i]
-    
+
 v_loop:
     call do_v_step
     loop v_loop
@@ -108,18 +108,18 @@ do_v_step:
     pusha
 .increment_v:
     fld st2
-%ifdef DOS
+    %ifdef DOS
     fadd dword [di]
-    fst dword [di]; v ← v + 2 * v_step
-%endif
-%ifdef LINUX
+    fst dword [di]           ; v ← v + 2 * v_step
+    %endif
+    %ifdef LINUX
     fadd dword [edi]
-    fst dword [edi]; v ← v + 2 * v_step
-%endif
+    fst dword [edi]          ; v ← v + 2 * v_step
+    %endif
 .checkerboard_v:
     fld st0
     fdiv dword [checkerboard_size]
-    fistp word [v_int]       ; checkerboard_v ← floor(v / checkerboard_size)
+    fistp word [v_int]       ; checkerboard_v ← ⌊v / checkerboard_size⌋
 .increment_px_py:
     fsincos
     fsubp st3, st0           ; py ← py - sin(v)
