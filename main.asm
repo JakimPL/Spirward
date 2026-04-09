@@ -17,34 +17,35 @@ start:
 .set_palette:
     mov dx, PALETTE_INDEX_PORT
     xor al, al
-    out dx, al               ; start at color 0
-    inc dx                   ; 0x3C9 - palette data port
-    xor bx, bx               ; BX = color index
-    mov cx, 0x0100           ; 256 colors
+    out dx, al                         ; start at color 0
+    inc dx                             ; 0x3C9 - palette data port
+    xor bx, bx                         ; BX = color index
+    mov cx, 0x0100                     ; 256 colors
 
 palette_loop:
     mov al, bl
-    shr al, 0x02             ; scale to 0-63
-    out dx, al               ; R
-    out dx, al               ; G
-    out dx, al               ; B
+    shr al, 0x02                       ; scale to 0-63
+    out dx, al                         ; R
+    out dx, al                         ; G
+    out dx, al                         ; B
     inc bx
     loop palette_loop
 
 main_loop:
-.wait_for_retrace:
+    push VIDEO_MEMORY_SEGMENT
+    pop es
+
+wait_for_retrace:
     mov dx, VGA_INPUT_STATUS_REGISTER
-.wait_end:
-    in al, dx
-    test al, VERTICAL_RETRACE_STATUS_BIT
-    jnz .wait_end
 .wait_start:
     in al, dx
     test al, VERTICAL_RETRACE_STATUS_BIT
     jz .wait_start
-.draw_spiral:
+
+frame:
     call draw
-.check_input:
+
+check_input:
     mov ah, 0x01
     int KEYBOARD_INTERRUPT
     jz main_loop

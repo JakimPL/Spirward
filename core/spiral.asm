@@ -1,14 +1,10 @@
     section .text
 draw:
-
 clear_buffers:
+    xor ax, ax
 .clear_video_buffer:
     %ifdef DOS
-    push VIDEO_MEMORY_SEGMENT
-    pop es
-
     xor di, di
-    xor ax, ax
     mov cx, VIDEO_BUFFER_SIZE
     rep stosw
     %endif
@@ -63,17 +59,14 @@ calculate_uv_values:
 .u:
     fld st0
     fimul word [focal_length]          ; u ← v_step × focal_length
-; frndint                            ; snap to integer for a cylindrical effect
+    frndint                            ; snap to integer for a cylindrical effect
 .u_int:
     fist word [u_int]                  ; checkerboard_u ← ⌊u⌋
-.depth:
-    fld st0
-    fmul st0, st0                      ; depth ← u²
 
 .calculate_light:
-    fiadd word [attenuation_a]
-    fidivr word [attenuation_b]
-    fistp word [light]                 ; light ← b / (a + depth)
+    fadd dword [attenuation_a]
+    fdivr dword [attenuation_b]
+    fistp word [light]                 ; light ← b / (a + u)
 
 calculate_initial_point:
     fadd st0, st3                      ; u ← u + offset
@@ -139,7 +132,7 @@ update_image:
     xor al, [v_int]
     and al, 0x01
     shl al, 2
-    inc al           ; color ← 4 (checkerboard_u ⊕ checkerboard_v) + 1
+    inc al                             ; color ← 4 (checkerboard_u ⊕ checkerboard_v) + 1
 .apply_lighting:
     mul word [light]
     %ifdef DOS

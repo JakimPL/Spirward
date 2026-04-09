@@ -19,8 +19,6 @@ class Constants:
 
     u_min: float = field(init=False)
     u_max: float = field(init=False)
-    d_min: float = field(init=False)
-    d_max: float = field(init=False)
 
     def calculate_u(self, i: int) -> float:
         return math.pi / i * self.focal_length
@@ -28,11 +26,7 @@ class Constants:
     def __post_init__(self) -> None:
         self.u_min = self.calculate_u(self.i_max)
         self.u_max = self.calculate_u(self.i_min)
-        self.d_min = self.u_min**2
-        self.d_max = self.u_max**2
-        print(
-            f"Calculated constants:\nu_min: {self.u_min}\nu_max: {self.u_max}\nd_min: {self.d_min}\nd_max: {self.d_max}"
-        )
+        print(f"Calculated constants:\nu_min: {self.u_min}\nu_max: {self.u_max}")
 
     def calculate_attenuation_factors(
         self,
@@ -40,8 +34,8 @@ class Constants:
         max_value: float,
     ) -> Tuple[float, float]:
         difference = 1 / min_value - 1 / max_value
-        b = (self.d_max - self.d_min) / difference
-        a = b / min_value - self.d_max
+        b = (self.u_max - self.u_min) / difference
+        a = b / min_value - self.u_max
         return a, b
 
 
@@ -89,4 +83,4 @@ def main() -> Tuple[float, float]:
 
 if __name__ == "__main__":
     a, b = main()
-    print(f"Attenuation factors:\na: {round(a)}\nb: {round(b)}")
+    print(f"Attenuation factors:\na: {a}\nb: {b}")
