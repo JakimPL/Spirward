@@ -58,7 +58,7 @@ calculate_uv_values:
     fidiv word [i]                     ; v_step ← π / i
 .v_step_2x:
     fld st0
-    fadd st0, st0                      ; v_step_2x ← 2π / i
+    fadd st0, st0                      ; 2 v_step ← 2π / i
     fxch
 .u:
     fld st0
@@ -68,12 +68,12 @@ calculate_uv_values:
     fist word [u_int]                  ; checkerboard_u ← ⌊u⌋
 .depth:
     fld st0
-    fmul st0, st0                      ; depth ← u * u
+    fmul st0, st0                      ; depth ← u²
 
 .calculate_light:
     fiadd word [attenuation_a]
     fidivr word [attenuation_b]
-    fistp word [light]                 ; light ← b / (a + u * u)
+    fistp word [light]                 ; light ← b / (a + depth)
 
 calculate_initial_point:
     fadd st0, st3                      ; u ← u + offset
@@ -95,11 +95,11 @@ v_loop:
     fld st2
     %ifdef DOS
     fadd dword [di]
-    fst dword [di]                     ; v ← v + 2 * v_step
+    fst dword [di]                     ; v ← v + 2 v_step
     %endif
     %ifdef LINUX
     fadd dword [edi]
-    fst dword [edi]                    ; v ← v + 2 * v_step
+    fst dword [edi]                    ; v ← v + 2 v_step
     %endif
 .checkerboard_v:
     fld st0
@@ -138,6 +138,8 @@ update_image:
     mov al, [u_int]
     xor al, [v_int]
     and al, 0x01
+    shl al, 2
+    inc al           ; color ← 4 (checkerboard_u ⊕ checkerboard_v) + 1
 .apply_lighting:
     mul word [light]
     %ifdef DOS

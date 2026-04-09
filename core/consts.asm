@@ -23,6 +23,6 @@ checkerboard_size:
 
 ; to optimize
 attenuation_a:
-    dw -4
+    dw 0
 attenuation_b:
-    dw 800
+    dw 195
