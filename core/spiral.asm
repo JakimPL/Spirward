@@ -1,10 +1,12 @@
     section .text
 draw:
+
 clear_buffers:
 .clear_video_buffer:
     %ifdef DOS
     push VIDEO_MEMORY_SEGMENT
     pop es
+
     xor di, di
     xor ax, ax
     mov cx, VIDEO_BUFFER_SIZE
@@ -34,7 +36,6 @@ draw_spiral:
     %endif
 .loop_init:
     mov al, U_MIN
-; xor ah, ah
 
 ; for u = U_MIN to U_MAX
 u_loop_start:
@@ -87,7 +88,7 @@ calculate_initial_point:
 
 ; for v = 0 to i - 1
 v_loop_start:
-    mov cl, byte [i]
+    mov cl, al
 
 v_loop:
 .increment_v:

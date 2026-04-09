@@ -15,9 +15,6 @@
     U_MAX equ 200
     BUFFER_SIZE equ SCREEN_WIDTH * SCREEN_HEIGHT
 
-    TWO_PI equ 0xC90F
-    FOCAL_LENGTH equ 0x55
-
     section .data
 focal_length:
     dw 180
