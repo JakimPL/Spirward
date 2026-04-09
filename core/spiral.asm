@@ -30,7 +30,7 @@ draw_spiral:
     %ifdef LINUX
     mov esi, offset
     fadd dword [esi]
-    fst dword [esi]
+    fst dword [esi]                    ; offset ← offset + offset_delta
     %endif
 .loop_init:
     mov al, U_MIN
@@ -68,11 +68,9 @@ calculate_uv_values:
 .u:
     fld st0
     fimul word [focal_length]          ; u ← v_step × focal_length
-    frndint                            ; snap to integer for a cylindrical effect
+; frndint                            ; snap to integer for a cylindrical effect
 .u_int:
-    fld st0
-    fdiv dword [checkerboard_size]
-    fistp word [u_int]                 ; checkerboard_u ← ⌊u / checkerboard_size⌋
+    fist word [u_int]                 ; checkerboard_u ← ⌊u⌋
 .depth:
     fld st0
     fmul st0, st0                      ; depth ← u * u
@@ -94,18 +92,8 @@ calculate_initial_point:
     fxch
     mov cl, byte [i]
 
+; for v = 0 to i - 1
 v_loop:
-    call do_v_step
-    loop v_loop
-.exit:
-    popa
-    fstp st0
-    fstp st0
-    fstp st0
-    ret
-
-do_v_step:
-    pusha
 .increment_v:
     fld st2
     %ifdef DOS
@@ -120,16 +108,16 @@ do_v_step:
     fld st0
     fdiv dword [checkerboard_size]
     fistp word [v_int]                 ; checkerboard_v ← ⌊v / checkerboard_size⌋
-.increment_px_py:
+.increment_px_py:                      ; double v rotation
     %ifdef DOS
-    fadd dword [di]
+    fadd dword [si]
     %endif
     %ifdef LINUX
-    fadd dword [esi]                   ; double v rotation
+    fadd dword [esi]                   
     %endif
     fsincos
-    fsubp st3, st0                     ; py ← py - sin(v + offset)
-    fsubp st1, st0                     ; px ← px - cos(v + offset)
+    fsubp st3, st0                     ; py ← py - cos(v + offset)
+    fsubp st1, st0                     ; px ← px - sin(v + offset)
     fist word [px_int]
     fxch
     fist word [py_int]
@@ -164,8 +152,14 @@ update_image:
 .draw_pixel:
     call draw_pixel
     %endif
-.exit:
+; end for v    
+
+    loop v_loop
+v_loop_exit:
     popa
+    fstp st0
+    fstp st0
+    fstp st0
     ret
 
     %include "core/consts.asm"
