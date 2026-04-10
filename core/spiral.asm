@@ -1,39 +1,71 @@
+    %ifdef DOS
+    %define REG(x) x
+    %else
+    %define REG(x) e%+x
+    %endif
+
     section .text
 draw:
 clear_buffers:
-    xor ax, ax
 .clear_video_buffer:
     %ifdef DOS
+    xor ax, ax
     xor di, di
     mov cx, VIDEO_BUFFER_SIZE
     rep stosw
     %endif
-    %ifdef LINUX
-    mov edi, image
-    xor eax, eax
-    mov ecx, BUFFER_SIZE
-    rep stosb
-    %endif
+
+; .diffusion:
+; %ifdef DOS
+; xor si, si
+; %endif
+; %ifdef LINUX
+; xor ebx, ebx
+; %endif
+; .diffuse:
+; mov ax, [es:bx]
+; mov bx, ax
+; shr bx, 1
+; and bx, 0x7F7F
+
+; mov dx, [es:bx-2]
+; shr dx, 4
+; and dx, 0x0F0F
+; mov cx, [es:bx+2]
+; shr cx, 4
+; and cx, 0x0F0F
+; add dx, cx
+; add bx, dx
+
+; mov dx, [es:bx-REAL_SCREEN_WIDTH*2]
+; shr dx, 4
+; and dx, 0x0F0F
+; mov cx, [es:bx+REAL_SCREEN_WIDTH*2]
+; shr cx, 4
+; and cx, 0x0F0F
+; add dx, cx
+; add bx, dx
+
+; mov [es:bx], bx
+; add bx, REAL_SCREEN_WIDTH*2 + 2
+; cmp bx, VIDEO_BUFFER_SIZE
+; jb .diffuse
 
 draw_spiral:
+    xor ax, ax
     pusha
 .increment_offset:
     fld1
     fidiv word [focal_length]          ; offset_delta ← 1 / focal_length
-    %ifdef DOS
-    mov si, offset
-    fadd dword [si]
-    fst dword [si]                     ; offset ← offset + offset_delta
-    %endif
-    %ifdef LINUX
-    mov esi, offset
-    fadd dword [esi]
-    fst dword [esi]                    ; offset ← offset + offset_delta
-    %endif
-.loop_init:
-    mov al, U_MIN
 
-; for u = U_MIN to U_MAX
+    mov REG(si), offset
+    fadd dword [REG(si)]
+    fst dword [REG(si)]                ; offset ← offset + offset_delta
+
+.loop_init:
+    mov al, I_MIN
+
+; for u = I_MIN to I_MAX
 u_loop_start:
     mov [i], ax
 
@@ -41,14 +73,8 @@ u_loop:
     pusha
 calculate_uv_values:
 .v:
-    %ifdef DOS
-    mov di, f_v
-    fst dword [di]                     ; v ← offset
-    %endif
-    %ifdef LINUX
-    mov edi, f_v
-    fst dword [edi]                    ; v ← offset
-    %endif
+    mov REG(di), f_v
+    fst dword [REG(di)]                ; v ← offset
 .v_step:
     fldpi
     fidiv word [i]                     ; v_step ← π / i
@@ -60,16 +86,16 @@ calculate_uv_values:
     fld st0
     fimul word [focal_length]          ; u ← v_step × focal_length
     fld st0
-    frndint                            ; snap to integer for a cylindrical effect    
+    frndint                            ; snap to integer for a cylindrical effect
 .u_int:
     fist word [u_int]                  ; checkerboard_u ← ⌊u⌋
 
 .u_combined:
-    fsub st0, st1                     
+    fsub st0, st1
     fld st4
     fsin
     fabs
-    fmulp st1, st0                   
+    fmulp st1, st0
     faddp st1, st0                     ; u ← u + (⌊u⌋ - u) × |sin(offset)|
 
 .calculate_light:
@@ -96,25 +122,14 @@ v_loop_start:
 v_loop:
 .increment_v:
     fld st2
-    %ifdef DOS
-    fadd dword [di]
-    fst dword [di]                     ; v ← v + 2 v_step
-    %endif
-    %ifdef LINUX
-    fadd dword [edi]
-    fst dword [edi]                    ; v ← v + 2 v_step
-    %endif
+    fadd dword [REG(di)]
+    fst dword [REG(di)]                ; v ← v + 2 v_step
 .checkerboard_v:
     fld st0
     fdiv dword [checkerboard_size]
     fistp word [v_int]                 ; checkerboard_v ← ⌊v / checkerboard_size⌋
 .increment_px_py:                      ; double v rotation
-    %ifdef DOS
-    fadd dword [si]
-    %endif
-    %ifdef LINUX
-    fadd dword [esi]
-    %endif
+    fadd dword [REG(si)]
     fsincos
     fsubp st3, st0                     ; py ← py - cos(v + offset)
     fsubp st1, st0                     ; px ← px - sin(v + offset)
@@ -126,17 +141,10 @@ v_loop:
 update_image:
 .map_to_screen:
     mov ax, [py_int]
-; cmp ax, REAL_SCREEN_HEIGHT ; remove?
-; jae .exit
     imul ax, REAL_SCREEN_WIDTH
     add ax, [px_int]
-; cmp bl, REAL_SCREEN_WIDTH
-; jae .exit
     add ax, CENTER_OFFSET
     mov bx, ax
-    %ifdef LINUX
-    mov [array_index], ax
-    %endif
 .apply_pattern:
     mov al, [u_int]
     xor al, [v_int]
@@ -145,17 +153,31 @@ update_image:
     inc al                             ; color ← 4 (checkerboard_u ⊕ checkerboard_v) + 1
 .apply_lighting:
     mul word [light]
-    %ifdef DOS
-    mov ah, al
-    mov [es:bx], ax
-    %endif
-    %ifdef LINUX
-    mov [color], ax
+
+; overlay:
+; pusha
+; shr al, 5
+; mov cl, 2
+; .multi_draw:
+; shl bx, 1
+; add bx, 0xFD01
+; neg bx
+
+; shr al, 1
+; add al, [es:bx]
+; jno .draw_pixel
+
+; mov ax, 0xFFFF
+; .draw_overlay_pixel:
+; mov ah, al
+; mov [es:bx], ax
+; mov [es:bx + REAL_SCREEN_WIDTH], ax
+; loop .multi_draw
+; popa
+
 .draw_pixel:
-    push cx
-    call draw_pixel
-    pop cx
-    %endif
+    mov ah, al
+    mov [es:bx], ax                    ; write two pixels for a thicker spiral
 
     loop v_loop
 v_loop_exit:
@@ -167,7 +189,7 @@ v_loop_exit:
 
 u_loop_exit:
     inc al
-    cmp al, U_MAX + 1
+    cmp al, I_MAX + 1
     jb u_loop_start
 ; end for u
 

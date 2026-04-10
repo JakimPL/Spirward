@@ -1,17 +1,3 @@
-    SCREEN_WIDTH equ 160
-    SCREEN_HEIGHT equ 100
-    BUFFER_SIZE equ SCREEN_WIDTH * SCREEN_HEIGHT
-
-    REAL_SCREEN_WIDTH equ 320
-    REAL_SCREEN_HEIGHT equ 200
-    %ifdef DOS
-    VIDEO_BUFFER_SIZE equ REAL_SCREEN_WIDTH * REAL_SCREEN_HEIGHT / 2
-    %endif
-    %ifdef LINUX
-    VIDEO_BUFFER_SIZE equ REAL_SCREEN_WIDTH * REAL_SCREEN_HEIGHT
-    %endif
-
-    CHECKERBOARD_SIZE equ 8
 
     section .bss
 color:
@@ -44,5 +30,5 @@ v_int:
 array_index:
     resw 1
 image:
-    resw VIDEO_BUFFER_SIZE
+    resb 65536
     %endif

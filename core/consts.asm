@@ -5,15 +5,18 @@
     global half_spiral_screen_width
     global half_spiral_screen_height
 
+    REAL_SCREEN_WIDTH equ 320
+    REAL_SCREEN_HEIGHT equ 200
+    VIDEO_BUFFER_SIZE equ REAL_SCREEN_WIDTH * REAL_SCREEN_HEIGHT
+    CENTER_OFFSET equ 0x7DA0
+
     SCREEN_WIDTH equ 160
     SCREEN_HEIGHT equ 100
     HALF_SCREEN_WIDTH equ SCREEN_WIDTH / 2
     HALF_SCREEN_HEIGHT equ SCREEN_HEIGHT / 2
-    CENTER_OFFSET equ 0x7DA0
 
-    U_MIN equ 40
-    U_MAX equ 200
-    BUFFER_SIZE equ SCREEN_WIDTH * SCREEN_HEIGHT
+    I_MIN equ 40
+    I_MAX equ 200
 
     section .data
 focal_length:

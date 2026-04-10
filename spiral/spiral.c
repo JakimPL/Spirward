@@ -3,10 +3,6 @@
 
 #include "spiral.h"
 
-void draw_pixel() {
-    image[array_index] = (unsigned char) (color);
-}
-
 void clear_screen() {
     video_clear_screen(0);
 }
