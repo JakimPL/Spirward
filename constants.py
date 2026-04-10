@@ -3,7 +3,7 @@ import math
 from dataclasses import dataclass, field
 from typing import Final, Tuple
 
-I_MIN: Final[int] = 40
+I_MIN: Final[int] = 20
 I_MAX: Final[int] = 120
 FOCAL_LENGTH: Final[float] = 200.0
 

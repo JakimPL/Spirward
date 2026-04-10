@@ -35,13 +35,13 @@ draw_spiral:
     fst dword [REG(si)]                ; offset ← offset + offset_delta
 
 .loop_init:
-    mov al, I_MIN
+    mov bl, I_MIN
 
 ; for i = I_MIN to I_MAX
 u_loop_start:
     pusha
-    shl ax, 1
-    mov [i], ax
+    shl bx, 1
+    mov [i], bx
 
 u_loop:
 calculate_uv_values:
@@ -58,10 +58,15 @@ calculate_uv_values:
 .u:
     fld st0
     fimul word [focal_length]          ; u ← v_step × focal_length
+    fist word [u_int]                  ; checkerboard_u ← ⌊u⌋
+
+.skip_cylindrical_effect:
+    cmp word [frame_count], CYLINDRICAL_EFFECT_DELAY
+    jb .calculate_light
+
+.u_int:
     fld st0
     frndint                            ; snap to integer for a cylindrical effect
-.u_int:
-    fist word [u_int]                  ; checkerboard_u ← ⌊u⌋
 
 .u_combined:
     fsub st0, st1
@@ -90,7 +95,7 @@ calculate_initial_point:
 
 ; for v = 0 to i - 1
 v_loop_start:
-    mov dx, ax
+    mov dx, bx
 
 v_loop:
 .increment_v:
@@ -109,12 +114,12 @@ v_loop:
 
 .save_px_py:
     fld st0
-    fmul dword [checkerboard_size]    
-    fistp word [px_int]
+    fmul dword [checkerboard_size]
+    fistp word [px_int]                ; ; px' ← ⌊px × checkerboard_size⌋
     fxch
     fld st0
     fmul dword [checkerboard_size]
-    fistp word [py_int]
+    fistp word [py_int]                ; py' ← ⌊py × checkerboard_size⌋
     fxch
 
 update_image:
@@ -138,14 +143,13 @@ update_image:
     call draw_pixel
 
 overlay:
-    shr al, OVERLAY_RIGHT_SHIFT
-
     mov cl, 160
     shl cx, 1
     sub cx, word [i]
     shr cx, 6
-
     jz v_loop_end
+
+    shr al, OVERLAY_RIGHT_SHIFT
 .multi_draw:
     shl bx, 1
     add bx, MAGIC_NUMBER
@@ -172,14 +176,15 @@ v_loop_exit:
 ; end for v
 
 u_loop_exit:
-    inc ax
-    cmp ax, I_MAX + 1
+    inc bl
+    cmp bl, I_MAX + 1
     jb u_loop_start
 ; end for u
 
 draw_exit:
     fstp st0
     popa
+    inc word [frame_count]
     ret
 
 draw_pixel:

@@ -18,19 +18,24 @@
     HALF_SCREEN_WIDTH equ SCREEN_WIDTH / 2
     HALF_SCREEN_HEIGHT equ SCREEN_HEIGHT / 2
 
-    I_MIN equ 40
+    I_MIN equ 20
     I_MAX equ 120
+    FOCAL_LENGTH equ 200
 
+    CYLINDRICAL_EFFECT_DELAY equ 628   ; π × FOCAL_LENGTH
     OVERLAY_RIGHT_SHIFT equ 3
 
     section .data
 focal_length:
-    dw 200
+    dw FOCAL_LENGTH
 checkerboard_size:
-    dd 0.785398185253143311
+    dd 0.785398185253143311            ; π / 4
 
 ; to optimize
 attenuation_a:
-    dd -2.14
+    dd -1.43
 attenuation_b:
-    dd 5.7
+    dd 14.28
+
+frame_count:
+    dw 1
