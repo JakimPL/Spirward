@@ -40,13 +40,15 @@ int video_init(void) {
 void video_set_pixel(int x, int y, unsigned char color) {
     if (x >= 0 && x < REAL_SCREEN_WIDTH && y >= 0 && y < REAL_SCREEN_HEIGHT) {
         SDL_Rect rect = {x * SDL_SCALER, y * SDL_SCALER, SDL_SCALER, SDL_SCALER};
-        Uint32 pixel = SDL_MapRGB(surface->format, color, color, color);
+        unsigned char palette_color = 4 * color;
+        Uint32 pixel = SDL_MapRGB(surface->format, palette_color, palette_color, palette_color);
         SDL_FillRect(surface, &rect, pixel);
     }
 }
 
 void video_clear_screen(unsigned char color) {
-    Uint32 pixel = SDL_MapRGB(surface->format, color, color, color);
+    unsigned char palette_color = 4 * color;
+    Uint32 pixel = SDL_MapRGB(surface->format, palette_color, palette_color, palette_color);
     SDL_FillRect(surface, NULL, pixel);
 }
 

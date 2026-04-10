@@ -6,6 +6,8 @@
     %define MEM(offset) [image + offset]
     %endif
 
+    %define MEM_REG(offset) MEM(REG(offset))
+
     section .text
 draw:
 clear_buffers:
@@ -23,44 +25,7 @@ clear_buffers:
     rep stosd
     %endif
 
-; .diffusion:
-; %ifdef DOS
-; xor si, si
-; %endif
-; %ifdef LINUX
-; xor ebx, ebx
-; %endif
-; .diffuse:
-; mov ax, [es:bx]
-; mov bx, ax
-; shr bx, 1
-; and bx, 0x7F7F
-
-; mov dx, [es:bx-2]
-; shr dx, 4
-; and dx, 0x0F0F
-; mov cx, [es:bx+2]
-; shr cx, 4
-; and cx, 0x0F0F
-; add dx, cx
-; add bx, dx
-
-; mov dx, [es:bx-REAL_SCREEN_WIDTH*2]
-; shr dx, 4
-; and dx, 0x0F0F
-; mov cx, [es:bx+REAL_SCREEN_WIDTH*2]
-; shr cx, 4
-; and cx, 0x0F0F
-; add dx, cx
-; add bx, dx
-
-; mov [es:bx], bx
-; add bx, REAL_SCREEN_WIDTH*2 + 2
-; cmp bx, VIDEO_BUFFER_SIZE
-; jb .diffuse
-
 draw_spiral:
-    xor ax, ax
     pusha
 .increment_offset:
     fld1
@@ -164,26 +129,28 @@ update_image:
     mul word [light]
 
 .draw_pixel:
-    mov ah, al
-    mov MEM(REG(bx)), ax               ; write two pixels for a thicker spiral
+    call draw_pixel
 
 overlay:
-    shr al, 3
-    mov cl, 2
+    shr al, OVERLAY_RIGHT_SHIFT
+
+    mov cl, 220
+    sub cl, byte [i]
+    shr cl, 6
+
+    jz v_loop_end
 .multi_draw:
     shl bx, 1
-    add bx, 0xFD01
+    add bx, MAGIC_NUMBER
     neg bx
 
-    shr al, 1
     add al, MEM(REG(bx))
-    jno .draw_overlay_pixel
+    and al, 0x3F
 
-    mov al, 0xFF
 .draw_overlay_pixel:
-    mov ah, al
-    mov MEM(REG(bx)), ax
-; mov MEM(REG(bx) + REAL_SCREEN_WIDTH), ax
+    call draw_pixel
+
+    shr al, 1
     loop .multi_draw
 
 v_loop_end:
@@ -206,6 +173,12 @@ u_loop_exit:
 draw_exit:
     fstp st0
     popa
+    ret
+
+draw_pixel:
+    mov ah, al
+    mov MEM(REG(bx)), ax               ; write two pixels for a thicker spiral
+    mov MEM(REG(bx) + REAL_SCREEN_WIDTH), ax
     ret
 
     %include "core/consts.asm"

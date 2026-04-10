@@ -20,11 +20,10 @@ start:
     out dx, al                         ; start at color 0
     inc dx                             ; 0x3C9 - palette data port
     xor bx, bx                         ; BX = color index
-    mov cx, 0x0100                     ; 256 colors
+    mov cl, 0x40                       ; 64 colors
 
 palette_loop:
     mov al, bl
-    shr al, 0x02                       ; scale to 0-63
     out dx, al                         ; R
     out dx, al                         ; G
     out dx, al                         ; B

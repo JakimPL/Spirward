@@ -8,7 +8,9 @@
     REAL_SCREEN_WIDTH equ 320
     REAL_SCREEN_HEIGHT equ 200
     VIDEO_BUFFER_SIZE equ REAL_SCREEN_WIDTH * REAL_SCREEN_HEIGHT
+
     CENTER_OFFSET equ 0x7DA0
+    MAGIC_NUMBER equ 0x5D01
     BUFFER_SIZE equ 0x10000
 
     SCREEN_WIDTH equ 160
@@ -19,6 +21,8 @@
     I_MIN equ 40
     I_MAX equ 200
 
+    OVERLAY_RIGHT_SHIFT equ 3
+
     section .data
 focal_length:
     dw 180
@@ -27,6 +31,6 @@ checkerboard_size:
 
 ; to optimize
 attenuation_a:
-    dd -2.6
+    dd -1.8
 attenuation_b:
-    dd 11.5
+    dd 12.3

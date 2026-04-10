@@ -8,7 +8,7 @@ I_MAX: Final[int] = 200
 FOCAL_LENGTH: Final[float] = 180.0
 
 MIN_VALUE: Final[float] = 1.0
-MAX_VALUE: Final[float] = 51.0  # 255 / 5
+MAX_VALUE: Final[float] = 12.0  # 255 / 5
 
 
 @dataclass
