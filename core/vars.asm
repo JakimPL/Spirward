@@ -26,7 +26,7 @@ u_int:
 v_int:
     resw 1
 
-    %ifdef LINUX
+    %ifndef COM
 array_index:
     resw 1
 image:

@@ -1,9 +1,6 @@
 #ifndef SPIRAL_H
 #define SPIRAL_H
 
-#include <stdbool.h>
-#include "video.h"
-
 #define SCREEN_WIDTH 160
 #define SCREEN_HEIGHT 100
 #define BUFFER_SIZE 65536

@@ -1,4 +1,4 @@
-    %ifdef DOS
+    %ifdef COM
     %define REG(x) x
     %define MEM(offset) [es:offset]
     %else
@@ -10,13 +10,12 @@
 draw:
 clear_buffers:
 .clear_video_buffer:
-    %ifdef DOS
+    %ifdef COM
     xor ax, ax
     xor di, di
     mov cx, VIDEO_BUFFER_SIZE
     rep stosw
-    %endif
-    %ifdef LINUX
+    %else
     xor ebx, ebx
     xor eax, eax
     mov edi, image
@@ -166,8 +165,8 @@ update_image:
 
 .draw_pixel:
     mov ah, al
-    mov MEM(REG(bx)), ax                    ; write two pixels for a thicker spiral
-    
+    mov MEM(REG(bx)), ax               ; write two pixels for a thicker spiral
+
 overlay:
     shr al, 3
     mov cl, 2
@@ -184,7 +183,7 @@ overlay:
 .draw_overlay_pixel:
     mov ah, al
     mov MEM(REG(bx)), ax
-    ; mov MEM(REG(bx) + REAL_SCREEN_WIDTH), ax
+; mov MEM(REG(bx) + REAL_SCREEN_WIDTH), ax
     loop .multi_draw
 
 v_loop_end:

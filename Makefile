@@ -32,18 +32,20 @@ ASMFLAGS_BASE =
 # Debug flags
 ifeq ($(DEBUG),1)
     CFLAGS_DEBUG = -g -O0
-    ASMFLAGS_DEBUG = -g -F dwarf
+    ASMFLAGS_DEBUG_LINUX = -g -F dwarf
+    ASMFLAGS_DEBUG_DOS = -g
 else
     CFLAGS_DEBUG = -O2
-    ASMFLAGS_DEBUG =
+    ASMFLAGS_DEBUG_LINUX =
+    ASMFLAGS_DEBUG_DOS =
 endif
 
 # Platform-specific flags
 CFLAGS_LINUX = $(CFLAGS_BASE) $(CFLAGS_DEBUG) -Ispiral -Ivideo -m32
 CFLAGS_DOS = $(CFLAGS_BASE) $(CFLAGS_DEBUG) -Ispiral -Ivideo
-ASMFLAGS_LINUX = -f elf32 $(ASMFLAGS_DEBUG) -DLINUX
-ASMFLAGS_DOS = -f coff --prefix _ $(ASMFLAGS_DEBUG) -DDOS
-ASMFLAGS_COM = -f bin -DDOS
+ASMFLAGS_LINUX = -f elf32 $(ASMFLAGS_DEBUG_LINUX) -DLINUX
+ASMFLAGS_DOS = -f coff --prefix _ $(ASMFLAGS_DEBUG_DOS) -DDOS
+ASMFLAGS_COM = -f bin -DDOS -DCOM
 
 # Libraries
 LDFLAGS_LINUX = -lSDL2 -lm
@@ -51,7 +53,7 @@ LDFLAGS_DOS = -lm
 
 # Default target
 .PHONY: all
-all: linux dos com
+all: clean linux dos com
 
 # Assembly object file rules
 $(SPIRAL_ASM_OBJ_LINUX): $(ASM_SRC)

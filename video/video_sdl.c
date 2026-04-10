@@ -14,8 +14,8 @@ int video_init(void) {
         "Spiral Renderer",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        REAL_SCREEN_WIDTH,
-        REAL_SCREEN_HEIGHT,
+        REAL_SCREEN_WIDTH * SDL_SCALER,
+        REAL_SCREEN_HEIGHT * SDL_SCALER,
         SDL_WINDOW_SHOWN
     );
 
@@ -39,7 +39,7 @@ int video_init(void) {
 
 void video_set_pixel(int x, int y, unsigned char color) {
     if (x >= 0 && x < REAL_SCREEN_WIDTH && y >= 0 && y < REAL_SCREEN_HEIGHT) {
-        SDL_Rect rect = {x, y, 1, 1};
+        SDL_Rect rect = {x * SDL_SCALER, y * SDL_SCALER, SDL_SCALER, SDL_SCALER};
         Uint32 pixel = SDL_MapRGB(surface->format, color, color, color);
         SDL_FillRect(surface, &rect, pixel);
     }
