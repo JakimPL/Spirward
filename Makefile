@@ -7,6 +7,7 @@ DEBUG ?= 1
 LINUX_OUT = spiral-linux
 DOS_OUT = spiral.exe
 COM_OUT = spiral.com
+LST_OUT = spiral.lst spiral-raw.lst
 
 # Source files
 MAIN_SRC = main.c
@@ -102,7 +103,7 @@ run: linux
 # Clean build artifacts
 .PHONY: clean
 clean:
-	rm -f $(LINUX_OUT) $(DOS_OUT) $(COM_OUT) $(SPIRAL_ASM_OBJ_LINUX) $(SPIRAL_ASM_OBJ_DOS)
+	rm -f $(LINUX_OUT) $(DOS_OUT) $(COM_OUT) $(SPIRAL_ASM_OBJ_LINUX) $(SPIRAL_ASM_OBJ_DOS) $(LST_OUT)
 	@echo "Cleaned build artifacts"
 
 # Help
