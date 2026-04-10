@@ -5,7 +5,6 @@
     %define REG(x) e%+x
     %define MEM(offset) [image + offset]
     %endif
-
     %define MEM_REG(offset) MEM(REG(offset))
 
     section .text
@@ -38,12 +37,13 @@ draw_spiral:
 .loop_init:
     mov al, I_MIN
 
-; for u = I_MIN to I_MAX
+; for i = I_MIN to I_MAX
 u_loop_start:
+    pusha
+    shl ax, 1
     mov [i], ax
 
 u_loop:
-    pusha
 calculate_uv_values:
 .v:
     mov REG(di), f_v
@@ -90,7 +90,7 @@ calculate_initial_point:
 
 ; for v = 0 to i - 1
 v_loop_start:
-    mov dl, al
+    mov dx, ax
 
 v_loop:
 .increment_v:
@@ -106,9 +106,15 @@ v_loop:
     fsincos
     fsubp st3, st0                     ; py ← py - cos(v + offset)
     fsubp st1, st0                     ; px ← px - sin(v + offset)
-    fist word [px_int]
+
+.save_px_py:
+    fld st0
+    fmul dword [checkerboard_size]    
+    fistp word [px_int]
     fxch
-    fist word [py_int]
+    fld st0
+    fmul dword [checkerboard_size]
+    fistp word [py_int]
     fxch
 
 update_image:
@@ -134,9 +140,10 @@ update_image:
 overlay:
     shr al, OVERLAY_RIGHT_SHIFT
 
-    mov cl, 220
-    sub cl, byte [i]
-    shr cl, 6
+    mov cl, 160
+    shl cx, 1
+    sub cx, word [i]
+    shr cx, 6
 
     jz v_loop_end
 .multi_draw:
@@ -150,12 +157,12 @@ overlay:
 .draw_overlay_pixel:
     call draw_pixel
 
-    shr al, 1
+    shr al, 2
     loop .multi_draw
 
 v_loop_end:
     popa
-    dec dl
+    dec dx
     jnz v_loop
 v_loop_exit:
     popa
@@ -165,8 +172,8 @@ v_loop_exit:
 ; end for v
 
 u_loop_exit:
-    inc al
-    cmp al, I_MAX + 1
+    inc ax
+    cmp ax, I_MAX + 1
     jb u_loop_start
 ; end for u
 

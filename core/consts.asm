@@ -19,18 +19,18 @@
     HALF_SCREEN_HEIGHT equ SCREEN_HEIGHT / 2
 
     I_MIN equ 40
-    I_MAX equ 200
+    I_MAX equ 120
 
     OVERLAY_RIGHT_SHIFT equ 3
 
     section .data
 focal_length:
-    dw 180
+    dw 200
 checkerboard_size:
     dd 0.785398185253143311
 
 ; to optimize
 attenuation_a:
-    dd -1.8
+    dd -2.14
 attenuation_b:
-    dd 12.3
+    dd 5.7

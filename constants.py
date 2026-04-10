@@ -4,8 +4,8 @@ from dataclasses import dataclass, field
 from typing import Final, Tuple
 
 I_MIN: Final[int] = 40
-I_MAX: Final[int] = 200
-FOCAL_LENGTH: Final[float] = 180.0
+I_MAX: Final[int] = 120
+FOCAL_LENGTH: Final[float] = 200.0
 
 MIN_VALUE: Final[float] = 1.0
 MAX_VALUE: Final[float] = 12.0  # 255 / 5
@@ -21,7 +21,7 @@ class Constants:
     u_max: float = field(init=False)
 
     def calculate_u(self, i: int) -> float:
-        return math.pi / i * self.focal_length
+        return math.pi / (2 * i) * self.focal_length
 
     def __post_init__(self) -> None:
         self.u_min = self.calculate_u(self.i_max)
