@@ -30,7 +30,7 @@
 focal_length:
     dw FOCAL_LENGTH
 checkerboard_size:
-    dd 0.785398185253143311            ; π / 4
+    dd 1.2732395447351628            ; 4 / π
 
 ; to optimize
 attenuation_a:

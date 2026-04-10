@@ -104,34 +104,30 @@ v_loop:
     fst dword [REG(di)]                ; v ← v + 2 v_step
 .checkerboard_v:
     fld st0
-    fdiv dword [checkerboard_size]
-    fistp word [v_int]                 ; checkerboard_v ← ⌊v / checkerboard_size⌋
+    fmul dword [checkerboard_size]
+    fistp word [v_int]                  ; checkerboard_v ← ⌊v / checkerboard_size⌋
 .increment_px_py:                      ; double v rotation
     fadd dword [REG(si)]
     fsincos
     fsubp st3, st0                     ; py ← py - cos(v + offset)
     fsubp st1, st0                     ; px ← px - sin(v + offset)
-
 .save_px_py:
-    fld st0
-    fmul dword [checkerboard_size]
-    fistp word [px_int]                ; px' ← ⌊px × checkerboard_size⌋
+    mov REG(bx), px_int
+    fist word [REG(bx)]                 ; px' ← ⌊px × checkerboard_size⌋
     fxch
-    fld st0
-    fmul dword [checkerboard_size]
-    fistp word [py_int]                ; py' ← ⌊py × checkerboard_size⌋
+    fist word [REG(bx) + 2]                 ; py' ← ⌊py × checkerboard_size⌋
     fxch
 
 update_image:
 .map_to_screen:
-    mov ax, [py_int]
+    mov ax, [REG(bx) + 2]
     imul ax, REAL_SCREEN_WIDTH
-    add ax, [px_int]
+    add ax, [REG(bx)]
     add ax, CENTER_OFFSET
     mov bx, ax
 .apply_pattern:
-    mov al, [u_int]
-    xor al, [v_int]
+    mov al, [v_int]
+    xor al, [u_int]
     and al, 0x01
     shl al, 2
     inc al                             ; color ← 4 (checkerboard_u ⊕ checkerboard_v) + 1
@@ -142,27 +138,27 @@ update_image:
 .draw_pixel:
     call draw_pixel
 
-overlay:
-    mov cl, 160
-    shl cx, 1
-    sub cx, word [i]
-    shr cx, 6
-    jz v_loop_end
+; overlay:
+;     mov cl, 160
+;     shl cx, 1
+;     sub cx, word [i]
+;     shr cx, 6
+;     jz v_loop_end
 
-    shr al, OVERLAY_RIGHT_SHIFT
-.multi_draw:
-    shl bx, 1
-    add bx, MAGIC_NUMBER
-    neg bx
+;     shr al, OVERLAY_RIGHT_SHIFT
+; .multi_draw:
+;     shl bx, 1
+;     add bx, MAGIC_NUMBER
+;     neg bx
 
-    add al, MEM(REG(bx))
-    and al, MAX_COLOR
+;     add al, MEM(REG(bx))
+;     and al, MAX_COLOR
 
-.draw_overlay_pixel:
-    call draw_pixel
+; .draw_overlay_pixel:
+;     call draw_pixel
 
-    shr al, 2
-    loop .multi_draw
+;     shr al, 2
+;     loop .multi_draw
 
 v_loop_end:
     popa
@@ -188,6 +184,9 @@ draw_exit:
     ret
 
 draw_pixel:
+%ifndef COM
+    movzx ebx, bx
+%endif
     mov ah, al
     mov MEM(REG(bx)), ax               ; write two pixels for a thicker spiral
     mov MEM(REG(bx) + REAL_SCREEN_WIDTH), ax

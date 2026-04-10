@@ -50,7 +50,7 @@ check_input:
     jz main_loop
 
 .return_to_dos:
-    mov ax, TEXT_MODE_3H
+    ; mov ax, TEXT_MODE_3H
     int BIOS_VIDEO_INTERRUPT
 
     %include "core/spiral.asm"
