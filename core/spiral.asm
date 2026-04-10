@@ -1,7 +1,9 @@
     %ifdef DOS
     %define REG(x) x
+    %define MEM(offset) [es:offset]
     %else
     %define REG(x) e%+x
+    %define MEM(offset) [image + offset]
     %endif
 
     section .text
@@ -13,6 +15,13 @@ clear_buffers:
     xor di, di
     mov cx, VIDEO_BUFFER_SIZE
     rep stosw
+    %endif
+    %ifdef LINUX
+    xor ebx, ebx
+    xor eax, eax
+    mov edi, image
+    mov ecx, BUFFER_SIZE / 4
+    rep stosd
     %endif
 
 ; .diffusion:
@@ -117,7 +126,7 @@ calculate_initial_point:
 
 ; for v = 0 to i - 1
 v_loop_start:
-    mov cl, al
+    mov dl, al
 
 v_loop:
 .increment_v:
@@ -152,34 +161,36 @@ update_image:
     shl al, 2
     inc al                             ; color ← 4 (checkerboard_u ⊕ checkerboard_v) + 1
 .apply_lighting:
+    pusha
     mul word [light]
-
-; overlay:
-; pusha
-; shr al, 5
-; mov cl, 2
-; .multi_draw:
-; shl bx, 1
-; add bx, 0xFD01
-; neg bx
-
-; shr al, 1
-; add al, [es:bx]
-; jno .draw_pixel
-
-; mov ax, 0xFFFF
-; .draw_overlay_pixel:
-; mov ah, al
-; mov [es:bx], ax
-; mov [es:bx + REAL_SCREEN_WIDTH], ax
-; loop .multi_draw
-; popa
 
 .draw_pixel:
     mov ah, al
-    mov [es:bx], ax                    ; write two pixels for a thicker spiral
+    mov MEM(REG(bx)), ax                    ; write two pixels for a thicker spiral
+    
+overlay:
+    shr al, 3
+    mov cl, 2
+.multi_draw:
+    shl bx, 1
+    add bx, 0xFD01
+    neg bx
 
-    loop v_loop
+    shr al, 1
+    add al, MEM(REG(bx))
+    jno .draw_overlay_pixel
+
+    mov al, 0xFF
+.draw_overlay_pixel:
+    mov ah, al
+    mov MEM(REG(bx)), ax
+    ; mov MEM(REG(bx) + REAL_SCREEN_WIDTH), ax
+    loop .multi_draw
+
+v_loop_end:
+    popa
+    dec dl
+    jnz v_loop
 v_loop_exit:
     popa
     fstp st0

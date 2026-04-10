@@ -30,5 +30,5 @@ v_int:
 array_index:
     resw 1
 image:
-    resb 65536
+    resb BUFFER_SIZE
     %endif
