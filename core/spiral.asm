@@ -115,7 +115,7 @@ v_loop:
 .save_px_py:
     fld st0
     fmul dword [checkerboard_size]
-    fistp word [px_int]                ; ; px' ← ⌊px × checkerboard_size⌋
+    fistp word [px_int]                ; px' ← ⌊px × checkerboard_size⌋
     fxch
     fld st0
     fmul dword [checkerboard_size]
@@ -156,7 +156,7 @@ overlay:
     neg bx
 
     add al, MEM(REG(bx))
-    and al, 0x3F
+    and al, MAX_COLOR
 
 .draw_overlay_pixel:
     call draw_pixel

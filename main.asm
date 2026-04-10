@@ -3,7 +3,7 @@
     BIOS_VIDEO_INTERRUPT equ 0x10
     KEYBOARD_INTERRUPT equ 0x16
     VIDEO_MEMORY_SEGMENT equ 0xA000
-    PALETTE_INDEX_PORT equ 0x03C8
+    PALETTE_INDEX_PORT equ 0x03C9
     VGA_INPUT_STATUS_REGISTER equ 0x3DA
     VERTICAL_RETRACE_STATUS_BIT equ 0x08
 
@@ -14,21 +14,21 @@ start:
     mov ax, VIDEO_MODE_13H
     int BIOS_VIDEO_INTERRUPT
 
-.set_palette:
+set_palette:
     mov dx, PALETTE_INDEX_PORT
-    xor al, al
-    out dx, al                         ; start at color 0
-    inc dx                             ; 0x3C9 - palette data port
-    xor bx, bx                         ; BX = color index
     mov cl, 0x40                       ; 64 colors
-
-palette_loop:
+.palette_loop:
     mov al, bl
     out dx, al                         ; R
+    add al, 0x08
+    cmp al, MAX_COLOR
+    jbe .palette_ok
+    mov al, MAX_COLOR
+.palette_ok:
     out dx, al                         ; G
     out dx, al                         ; B
     inc bx
-    loop palette_loop
+    loop .palette_loop
 
 main_loop:
     push VIDEO_MEMORY_SEGMENT
