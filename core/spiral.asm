@@ -25,10 +25,13 @@ clear_buffers:
     %endif
 
 draw_spiral:
+    %ifndef COM
     pusha
+    %endif
 .increment_offset:
+    fild word [focal_length]
     fld1
-    fidiv word [focal_length]          ; offset_delta ← 1 / focal_length
+    fdiv st0, st1
 
     mov REG(si), offset
     fadd dword [REG(si)]
@@ -57,7 +60,7 @@ calculate_uv_values:
     fxch
 .u:
     fld st0
-    fimul word [focal_length]          ; u ← v_step × focal_length
+    fmul st0, st4                      ; u ← v_step × focal_length
     fist word [u_int]                  ; checkerboard_u ← ⌊u⌋
 
 .skip_cylindrical_effect:
@@ -78,9 +81,10 @@ calculate_uv_values:
 
 .calculate_light:
     fld st0
-    fadd dword [attenuation_a]
-    fdivr dword [attenuation_b]
-    fistp word [light]                 ; light ← b / (a + u)
+    fmul st0                           ; depth ← u²
+; fadd dword [attenuation_a]
+    fidivr word [attenuation_b]
+    fistp word [light]                 ; light ← b / (a + depth)
 
 calculate_initial_point:
     fadd st0, st3                      ; u ← u + offset
@@ -98,6 +102,7 @@ v_loop_start:
     mov dx, bx
 
 v_loop:
+    pusha
 .increment_v:
     fld st2
     fadd dword [REG(di)]
@@ -132,8 +137,7 @@ update_image:
     shl al, 2
     inc al                             ; color ← 4 (checkerboard_u ⊕ checkerboard_v) + 1
 .apply_lighting:
-    pusha
-    mul word [light]
+    mul word [light]                   ; color ← color × light
 
 .draw_pixel:
     call draw_pixel
@@ -173,13 +177,17 @@ v_loop_exit:
 
 u_loop_exit:
     inc bl
+; cmp bl, [frame_count]
+; ja draw_exit
     cmp bl, I_MAX + 1
     jb u_loop_start
 ; end for u
 
 draw_exit:
-    fstp st0
+; fstp st0                           ; ignore unbalanced FPU stack?
+    %ifndef COM
     popa
+    %endif
     inc word [frame_count]
     ret
 

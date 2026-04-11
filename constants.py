@@ -3,7 +3,7 @@ import math
 from dataclasses import dataclass, field
 from typing import Final, Tuple
 
-I_MIN: Final[int] = 20
+I_MIN: Final[int] = 10
 I_MAX: Final[int] = 120
 FOCAL_LENGTH: Final[float] = 200.0
 
@@ -34,8 +34,8 @@ class Constants:
         max_value: float,
     ) -> Tuple[float, float]:
         difference = 1 / min_value - 1 / max_value
-        b = (self.u_max - self.u_min) / difference
-        a = b / min_value - self.u_max
+        b = (self.u_max**2 - self.u_min**2) / difference
+        a = b / min_value - self.u_max**2
         return a, b
 
 

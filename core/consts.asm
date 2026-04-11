@@ -19,7 +19,7 @@
     HALF_SCREEN_WIDTH equ SCREEN_WIDTH / 2
     HALF_SCREEN_HEIGHT equ SCREEN_HEIGHT / 2
 
-    I_MIN equ 20
+    I_MIN equ 10
     I_MAX equ 120
     FOCAL_LENGTH equ 200
 
