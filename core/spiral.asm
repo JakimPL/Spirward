@@ -28,14 +28,16 @@ draw_spiral:
     %ifndef COM
     pusha
     %endif
+
+    mov REG(si), px_int
+    mov REG(di), offset
 .increment_offset:
     fild word [focal_length]
     fld1
     fdiv st0, st1
 
-    mov REG(si), offset
-    fadd dword [REG(si)]
-    fst dword [REG(si)]                ; offset ← offset + offset_delta
+    fadd dword [REG(di)]
+    fst dword [REG(di)]                ; offset ← offset + offset_delta
 
 .loop_init:
     mov bl, I_MIN
@@ -49,11 +51,10 @@ u_loop_start:
 u_loop:
 calculate_uv_values:
 .v:
-    mov REG(di), f_v
-    fst dword [REG(di)]                ; v ← offset
+    fst dword [REG(di) + 4]            ; v ← offset
 .v_step:
     fldpi
-    fidiv word [i]                     ; v_step ← π / i
+    fidiv word [REG(si) + 10]          ; v_step ← π / i
 .v_step_2x:
     fld st0
     fadd st0, st0                      ; 2 v_step ← 2π / i
@@ -61,7 +62,7 @@ calculate_uv_values:
 .u:
     fld st0
     fmul st0, st4                      ; u ← v_step × focal_length
-    fist word [u_int]                  ; checkerboard_u ← ⌊u⌋
+    fist word [REG(si) + 4]            ; u_int ← ⌊u⌋
 
 .skip_cylindrical_effect:
     cmp word [frame_count], CYLINDRICAL_EFFECT_DELAY
@@ -82,9 +83,8 @@ calculate_uv_values:
 .calculate_light:
     fld st0
     fmul st0                           ; depth ← u²
-; fadd dword [attenuation_a]
-    fidivr word [attenuation_b]
-    fistp word [light]                 ; light ← b / (a + depth)
+    fidivr word [attenuation_factor]
+    fistp word [REG(si) + 8]           ; light ← attenuation_factor / depth
 
 calculate_initial_point:
     fadd st0, st3                      ; u ← u + offset
@@ -102,42 +102,41 @@ v_loop_start:
     mov dx, bx
 
 v_loop:
-    pusha
+    push dx
 .increment_v:
     fld st2
-    fadd dword [REG(di)]
-    fst dword [REG(di)]                ; v ← v + 2 v_step
+    fadd dword [REG(di) + 4]
+    fst dword [REG(di) + 4]            ; v ← v + 2 v_step
 .checkerboard_v:
     fld st0
     fmul dword [checkerboard_size]
-    fistp word [v_int]                 ; checkerboard_v ← ⌊v / checkerboard_size⌋
-.increment_px_py:                      ; double v rotation
-    fadd dword [REG(si)]
+    fistp word [REG(si) + 6]           ; v_int ← ⌊v / checkerboard_size⌋
+.increment_px_py:
+    fadd dword [REG(di)]               ; double v rotation
     fsincos
     fsubp st3, st0                     ; py ← py - cos(v + offset)
     fsubp st1, st0                     ; px ← px - sin(v + offset)
 .save_px_py:
-    mov REG(bx), px_int
-    fist word [REG(bx)]                ; px' ← ⌊px × checkerboard_size⌋
+    fist word [REG(si)]                ; px' ← ⌊px × checkerboard_size⌋
     fxch
-    fist word [REG(bx) + 2]            ; py' ← ⌊py × checkerboard_size⌋
+    fist word [REG(si) + 2]            ; py' ← ⌊py × checkerboard_size⌋
     fxch
 
 update_image:
 .map_to_screen:
-    mov ax, [REG(bx) + 2]
+    mov ax, [REG(si) + 2]
     imul ax, REAL_SCREEN_WIDTH
-    add ax, [REG(bx)]
+    add ax, [REG(si)]
     add ax, CENTER_OFFSET
     mov bx, ax
 .apply_pattern:
-    mov al, [u_int]
-    xor al, [v_int]
+    mov al, [REG(si) + 4]
+    xor al, [REG(si) + 6]
     and al, 0x01
     shl al, 2
     inc al                             ; color ← 4 (checkerboard_u ⊕ checkerboard_v) + 1
 .apply_lighting:
-    mul word [light]                   ; color ← color × light
+    mul word [REG(si) + 8]             ; color ← color × light
 
 .draw_pixel:
     call draw_pixel
@@ -165,7 +164,7 @@ update_image:
 ; loop .multi_draw
 
 v_loop_end:
-    popa
+    pop dx
     dec dx
     jnz v_loop
 v_loop_exit:
