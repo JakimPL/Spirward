@@ -31,13 +31,14 @@ draw_spiral:
 
     mov REG(si), px_int
     mov REG(di), offset
+    mov REG(bp), focal_length
 .increment_offset:
-    fild word [focal_length]
+    fild word [REG(bp)]
     fld1
     fdiv st0, st1
 
-    fadd dword [REG(di)]
-    fst dword [REG(di)]                ; offset ← offset + offset_delta
+    fadd dword [REG(di) + 4]           ; offset ← offset + offset_delta
+    fst dword [REG(di) + 4]            ; offset ← offset + offset_delta
 
 .loop_init:
     mov bl, I_MIN
@@ -51,7 +52,7 @@ u_loop_start:
 u_loop:
 calculate_uv_values:
 .v:
-    fst dword [REG(di) + 4]            ; v ← offset
+    fst dword [REG(di)]                ; v ← offset
 .v_step:
     fldpi
     fidiv word [REG(si) + 10]          ; v_step ← π / i
@@ -65,7 +66,7 @@ calculate_uv_values:
     fist word [REG(si) + 4]            ; u_int ← ⌊u⌋
 
 .skip_cylindrical_effect:
-    cmp word [frame_count], CYLINDRICAL_EFFECT_DELAY
+    cmp word [REG(bp) + 4], CYLINDRICAL_EFFECT_DELAY ; frame_count < CYLINDRICAL_EFFECT_DELAY
     jb .calculate_light
 
 .u_int:
@@ -83,7 +84,7 @@ calculate_uv_values:
 .calculate_light:
     fld st0
     fmul st0                           ; depth ← u²
-    fidivr word [attenuation_factor]
+    fidivr word [REG(bp) + 2]
     fistp word [REG(si) + 8]           ; light ← attenuation_factor / depth
 
 calculate_initial_point:
@@ -105,14 +106,14 @@ v_loop:
     push dx
 .increment_v:
     fld st2
-    fadd dword [REG(di) + 4]
-    fst dword [REG(di) + 4]            ; v ← v + 2 v_step
+    fadd dword [REG(di)]
+    fst dword [REG(di)]                ; v ← v + 2 v_step
 .checkerboard_v:
     fld st0
-    fmul dword [checkerboard_size]
+    fmul dword [REG(bp) + 6]           ; checkerboard_v ← v / checkerboard_size
     fistp word [REG(si) + 6]           ; v_int ← ⌊v / checkerboard_size⌋
 .increment_px_py:
-    fadd dword [REG(di)]               ; double v rotation
+    fadd dword [REG(di) + 4]           ; double v rotation
     fsincos
     fsubp st3, st0                     ; py ← py - cos(v + offset)
     fsubp st1, st0                     ; px ← px - sin(v + offset)
@@ -187,7 +188,7 @@ draw_exit:
     %ifndef COM
     popa
     %endif
-    inc word [frame_count]
+    inc word [REG(bp) + 4]             ; frame_count
     ret
 
 draw_pixel:

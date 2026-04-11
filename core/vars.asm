@@ -12,9 +12,9 @@ light:
     resw 1
 i:
     resw 1
-offset:
-    resd 1
 f_v:
+    resd 1
+offset:
     resd 1
 
     %ifndef COM
