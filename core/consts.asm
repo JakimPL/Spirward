@@ -26,17 +26,15 @@
     CYLINDRICAL_EFFECT_DELAY equ 628   ; π × FOCAL_LENGTH
     OVERLAY_RIGHT_SHIFT equ 3
 
-    section .data
-focal_length:
-    dw FOCAL_LENGTH
-checkerboard_size:
-    dd 1.2732395447351628            ; 4 / π
+    %ifdef DOS
+    VIDEO_MODE_13H equ 0x13
+    TEXT_MODE_3H equ 0x03
+    BIOS_VIDEO_INTERRUPT equ 0x10
+    KEYBOARD_INTERRUPT equ 0x16
+    VIDEO_MEMORY_SEGMENT equ 0xA000
+    PALETTE_INDEX_PORT equ 0x03C8
+    PALETTE_DATA_PORT equ 0x03C9
 
-; to optimize
-attenuation_a:
-    dd -1.43
-attenuation_b:
-    dd 14.28
-
-frame_count:
-    dw 1
+    VGA_INPUT_STATUS_REGISTER equ 0x3DA
+    VERTICAL_RETRACE_STATUS_BIT equ 0x08
+    %endif

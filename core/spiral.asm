@@ -105,7 +105,7 @@ v_loop:
 .checkerboard_v:
     fld st0
     fmul dword [checkerboard_size]
-    fistp word [v_int]                  ; checkerboard_v ← ⌊v / checkerboard_size⌋
+    fistp word [v_int]                 ; checkerboard_v ← ⌊v / checkerboard_size⌋
 .increment_px_py:                      ; double v rotation
     fadd dword [REG(si)]
     fsincos
@@ -113,9 +113,9 @@ v_loop:
     fsubp st1, st0                     ; px ← px - sin(v + offset)
 .save_px_py:
     mov REG(bx), px_int
-    fist word [REG(bx)]                 ; px' ← ⌊px × checkerboard_size⌋
+    fist word [REG(bx)]                ; px' ← ⌊px × checkerboard_size⌋
     fxch
-    fist word [REG(bx) + 2]                 ; py' ← ⌊py × checkerboard_size⌋
+    fist word [REG(bx) + 2]            ; py' ← ⌊py × checkerboard_size⌋
     fxch
 
 update_image:
@@ -126,8 +126,8 @@ update_image:
     add ax, CENTER_OFFSET
     mov bx, ax
 .apply_pattern:
-    mov al, [v_int]
-    xor al, [u_int]
+    mov al, [u_int]
+    xor al, [v_int]
     and al, 0x01
     shl al, 2
     inc al                             ; color ← 4 (checkerboard_u ⊕ checkerboard_v) + 1
@@ -139,26 +139,26 @@ update_image:
     call draw_pixel
 
 ; overlay:
-;     mov cl, 160
-;     shl cx, 1
-;     sub cx, word [i]
-;     shr cx, 6
-;     jz v_loop_end
+; mov cl, 160
+; shl cx, 1
+; sub cx, word [i]
+; shr cx, 6
+; jz v_loop_end
 
-;     shr al, OVERLAY_RIGHT_SHIFT
+; shr al, OVERLAY_RIGHT_SHIFT
 ; .multi_draw:
-;     shl bx, 1
-;     add bx, MAGIC_NUMBER
-;     neg bx
+; shl bx, 1
+; add bx, MAGIC_NUMBER
+; neg bx
 
-;     add al, MEM(REG(bx))
-;     and al, MAX_COLOR
+; add al, MEM(REG(bx))
+; and al, MAX_COLOR
 
 ; .draw_overlay_pixel:
-;     call draw_pixel
+; call draw_pixel
 
-;     shr al, 2
-;     loop .multi_draw
+; shr al, 2
+; loop .multi_draw
 
 v_loop_end:
     popa
@@ -184,13 +184,14 @@ draw_exit:
     ret
 
 draw_pixel:
-%ifndef COM
+    %ifndef COM
     movzx ebx, bx
-%endif
+    %endif
     mov ah, al
     mov MEM(REG(bx)), ax               ; write two pixels for a thicker spiral
     mov MEM(REG(bx) + REAL_SCREEN_WIDTH), ax
     ret
 
+    %include "core/data.asm"
     %include "core/consts.asm"
     %include "core/vars.asm"

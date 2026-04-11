@@ -15,11 +15,13 @@ SPIRAL_SOURCES = $(wildcard spiral/*.c)
 SDL_SRC = video/video_sdl.c
 DOS_SRC = video/video_dos.c
 ASM_SRC = core/linux.asm
+DOS_ASM_SRC = core/dos.asm
 COM_SRC = main.asm
 
 # Object files (in main directory)
 SPIRAL_ASM_OBJ_LINUX = spiral-linux.o
 SPIRAL_ASM_OBJ_DOS = spiral.o
+DOS_ASM_OBJ = dos.o
 
 # Compilers
 CC_LINUX = gcc
@@ -58,9 +60,15 @@ all: clean linux dos com
 
 # Assembly object file rules
 $(SPIRAL_ASM_OBJ_LINUX): $(ASM_SRC)
+	@echo "\033[1mAssembling $(ASM_SRC) for Linux...\033[0m"
 	$(ASM) $(ASMFLAGS_LINUX) -o $@ $<
 
 $(SPIRAL_ASM_OBJ_DOS): $(ASM_SRC)
+	@echo "\033[1mAssembling $(ASM_SRC) for DOS...\033[0m"
+	$(ASM) $(ASMFLAGS_DOS) -o $@ $<
+
+$(DOS_ASM_OBJ): $(DOS_ASM_SRC)
+	@echo "\033[1mAssembling $(DOS_ASM_SRC) for DOS...\033[0m"
 	$(ASM) $(ASMFLAGS_DOS) -o $@ $<
 
 # Linux build (SDL2)
@@ -68,27 +76,33 @@ $(SPIRAL_ASM_OBJ_DOS): $(ASM_SRC)
 linux: $(LINUX_OUT)
 
 $(LINUX_OUT): $(MAIN_SRC) $(SPIRAL_SOURCES) $(SDL_SRC) $(SPIRAL_ASM_OBJ_LINUX)
+	@echo "\033[1;34m==> Building for Linux (SDL2)\033[0m"
 	$(CC_LINUX) $(CFLAGS_LINUX) -o $@ $(MAIN_SRC) $(SPIRAL_SOURCES) $(SDL_SRC) $(SPIRAL_ASM_OBJ_LINUX) $(LDFLAGS_LINUX)
-	@echo "Linux build complete: $(LINUX_OUT)"
+	@echo "\033[1;32mLinux build complete: $(LINUX_OUT)\033[0m"
+	@echo
 
 # DOS build (DJGPP)
 # TODO: Assembly integration needs underscore-prefixed symbols for DJGPP
 .PHONY: dos
 dos: $(DOS_OUT)
 
-$(DOS_OUT): $(MAIN_SRC) $(SPIRAL_SOURCES) $(DOS_SRC) $(SPIRAL_ASM_OBJ_DOS)
-	$(CC_DOS) $(CFLAGS_DOS) -o $@ $(MAIN_SRC) $(SPIRAL_SOURCES) $(DOS_SRC) $(SPIRAL_ASM_OBJ_DOS) $(LDFLAGS_DOS)
-	@echo "DOS build complete: $(DOS_OUT)"
+$(DOS_OUT): $(MAIN_SRC) $(SPIRAL_SOURCES) $(DOS_SRC) $(SPIRAL_ASM_OBJ_DOS) $(DOS_ASM_OBJ)
+	@echo "\033[1;35m==> Building for DOS (DJGPP)\033[0m"
+	$(CC_DOS) $(CFLAGS_DOS) -o $@ $(MAIN_SRC) $(SPIRAL_SOURCES) $(DOS_SRC) $(SPIRAL_ASM_OBJ_DOS) $(DOS_ASM_OBJ) $(LDFLAGS_DOS)
+	@echo "\033[1;32mDOS build complete: $(DOS_OUT)\033[0m"
+	@echo
 
 # COM build (Assembly only)
 .PHONY: com
 com: $(COM_OUT)
 
 $(COM_OUT): $(COM_SRC)
+	@echo "\033[1;33m==> Building COM file (DOS 256b demo)\033[0m"
 	$(ASM) $(ASMFLAGS_COM) $< -o $@ -l $(basename $@).lst
 	@./show-sizes.sh $(basename $@).lst
-	@echo "COM build complete: $(COM_OUT) ($$(stat -c%s $@) bytes)"
-	@echo "Listing with sizes: $(basename $@).lst"
+	@echo "\033[1;32mCOM build complete: $(COM_OUT) ($$(stat -c%s $@) bytes)\033[0m"
+	@echo "\033[1mListing with sizes: $(basename $@).lst\033[0m"
+	@echo
 
 # Show instruction sizes from listing
 .PHONY: sizes
@@ -103,8 +117,10 @@ run: linux
 # Clean build artifacts
 .PHONY: clean
 clean:
-	rm -f $(LINUX_OUT) $(DOS_OUT) $(COM_OUT) $(SPIRAL_ASM_OBJ_LINUX) $(SPIRAL_ASM_OBJ_DOS) $(LST_OUT)
+	@echo "\033[1mCleaning build artifacts...\033[0m"
+	rm -f $(LINUX_OUT) $(DOS_OUT) $(COM_OUT) $(SPIRAL_ASM_OBJ_LINUX) $(SPIRAL_ASM_OBJ_DOS) $(DOS_ASM_OBJ) $(LST_OUT)
 	@echo "Cleaned build artifacts"
+	@echo
 
 # Help
 .PHONY: help

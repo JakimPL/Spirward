@@ -8,6 +8,7 @@
 /* Mode 13h framebuffer address */
 #define VIDEO_MEMORY 0xA0000
 
+extern void set_palette(void);
 static unsigned char *vga_memory = NULL;
 
 static void set_graphics_mode(int mode) {
@@ -16,21 +17,9 @@ static void set_graphics_mode(int mode) {
     int86(0x10, &regs, &regs);
 }
 
-static void set_grayscale_palette(void) {
-    int i;
-    for (i = 0; i < 256; i++) {
-        /* VGA DAC uses 6-bit values (0-63) */
-        int intensity = (i * 63) / 255;
-        outportb(0x3C8, i);         /* Select palette index */
-        outportb(0x3C9, intensity); /* Red */
-        outportb(0x3C9, intensity); /* Green */
-        outportb(0x3C9, intensity); /* Blue */
-    }
-}
-
 int video_init(void) {
     set_graphics_mode(0x0013);
-    set_grayscale_palette();
+    set_palette();
 
     /* Enable near pointers for direct VGA access */
     if (__djgpp_nearptr_enable() == 0) {
