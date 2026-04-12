@@ -1,14 +1,12 @@
 
     section .bss
-px_int:
+px:
     resw 1
-py_int:
+py:
     resw 1
-u_int:
+u:
     resw 1
-v_int:
-    resw 1
-light:
+v:
     resw 1
 i:
     resw 1

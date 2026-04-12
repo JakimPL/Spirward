@@ -23,7 +23,7 @@
     I_MAX equ 110                      ; COLOR_MAX = 5 * ((I_MAX - I_MIN) >> 3)
     FOCAL_LENGTH equ 176               ; U_MIN = 176π / (2 * I_MAX) - 0.5 ≈ 2.01 is almost an integer
 
-    CYLINDRICAL_EFFECT_DELAY equ 553   ; π × FOCAL_LENGTH
+    CYLINDRICAL_EFFECT_DELAY equ 138   ; π × FOCAL_LENGTH / 4
     OVERLAY_RIGHT_SHIFT equ 3
 
     %ifdef DOS

@@ -7,7 +7,13 @@
     %endif
     %define MEM_REG(offset) MEM(REG(offset))
 
-    %define I (REG(si) + 10)
+    %define PX (REG(si))
+    %define PY (REG(si) + 2)
+    %define U (REG(si) + 4)
+    %define V (REG(si) + 6)
+    %define I (REG(si) + 8)
+    %define F_V REG(di)
+    %define OFFSET REG(di + 4)
 
     section .text
 draw:
@@ -30,7 +36,7 @@ clear_buffers:
     %endif
 
 draw_spiral:
-    mov REG(si), px_int
+    mov REG(si), px
     mov REG(di), f_v
     mov REG(bp), focal_length
 .increment_offset:
@@ -38,8 +44,8 @@ draw_spiral:
     fld1
     fdiv st0, st1                      ; offset_delta ← 1 / focal_length
 
-    fadd dword [REG(di) + 4]
-    fst dword [REG(di) + 4]            ; offset ← offset + offset_delta
+    fadd dword [OFFSET]
+    fst dword [OFFSET]                 ; offset ← offset + offset_delta
 
 .loop_init:
     mov bl, I_MIN
@@ -53,7 +59,7 @@ u_loop_start:
 u_loop:
 calculate_uv_values:
 .v:
-    fst dword [REG(di)]                ; v ← offset
+    fst dword [F_V]                    ; v ← offset
 .v_step:
     fldpi
     fidiv word [I]                     ; v_step ← π / i
@@ -64,15 +70,17 @@ calculate_uv_values:
 .u:
     fld st0
     fmul st0, st4                      ; u ← v_step × focal_length
-    fist word [REG(si) + 4]            ; u_int ← ⌊u⌋
+    fist word [U]                      ; u_int ← ⌊u⌋
 
 .skip_cylindrical_effect:
-    cmp word [REG(bp) + 2], CYLINDRICAL_EFFECT_DELAY ; frame_count < CYLINDRICAL_EFFECT_DELAY
+    mov ax, [REG(bp) + 2]
+    shr ax, 1
+    cmp al, CYLINDRICAL_EFFECT_DELAY   ; frame_count < CYLINDRICAL_EFFECT_DELAY
     jb calculate_initial_point
 
 cylindrical_effect:
 .u_int:
-    fild word [REG(si) + 4]
+    fild word [U]
 
 .u_combined:
     fsub st0, st1
@@ -101,40 +109,40 @@ v_loop:
     pusha
 .increment_v:
     fld st2
-    fadd dword [REG(di)]
-    fst dword [REG(di)]                ; v ← v + 2 v_step
+    fadd dword [F_V]
+    fst dword [F_V]                    ; v ← v + 2 v_step
 .checkerboard_v:
     fld st0
     fmul dword [REG(bp) + 4]           ; checkerboard_v ← v / checkerboard_size
-    fistp word [REG(si) + 6]           ; v_int ← ⌊v / checkerboard_size⌋
+    fistp word [V]                     ; v_int ← ⌊v / checkerboard_size⌋
 .increment_px_py:
-    fadd dword [REG(di) + 4]           ; double v rotation
+    fadd dword [OFFSET]                ; double v rotation
     fsincos
     fsubp st3, st0                     ; py ← py - cos(v + offset)
     fsubp st1, st0                     ; px ← px - sin(v + offset)
 .save_px_py:
-    fist word [REG(si)]                ; px' ← ⌊px × checkerboard_size⌋
+    fist word [PX]                     ; px_int ← ⌊px × checkerboard_size⌋
     fxch
-    fist word [REG(si) + 2]            ; py' ← ⌊py × checkerboard_size⌋
+    fist word [PY]                     ; py_int ← ⌊py × checkerboard_size⌋
     fxch
 
 update_image:
-    mov cx, bx
+    mov cl, bl
 .map_to_screen:
-    mov bx, [REG(si) + 2]
+    mov bx, [PY]
     imul bx, REAL_SCREEN_WIDTH
-    add bx, [REG(si)]
+    add bx, [PX]
     add bx, CENTER_OFFSET
 .apply_pattern:
-    mov al, [REG(si) + 4]
-    xor al, [REG(si) + 6]
+    mov al, [U]
+    xor al, [V]
     and al, 0x01
     shl al, 2
-    inc al                             ; pattern ← 4 × (u_int ⊕ v_int) + 1
+    inc al                             ; pattern ← 4 × (u_int ⊕ v_int) + 1  [1 or 5]
 .apply_lighting:
     sub cl, 2 * I_MIN
-    shr cx, 4                          ; light ← (i - 2 I_MIN) / 16 [0...13 range]
-    mul cl                             ; color = pattern × light [0...65 range]
+    shr cl, 4                          ; light ← (i - 2 I_MIN) / 16 [0...12 range]
+    mul cl                             ; color = pattern × light    [0...60 range]
 
 .draw_pixel:
     call draw_pixel
