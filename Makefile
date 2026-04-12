@@ -15,13 +15,13 @@ SPIRAL_SOURCES = $(wildcard spiral/*.c)
 SDL_SRC = video/video_sdl.c
 DOS_SRC = video/video_dos.c
 ASM_SRC = core/linux.asm
-DOS_ASM_SRC = core/dos.asm
+PALETTE_ASM_SRC = core/palette.asm
 COM_SRC = main.asm
 
 # Object files (in main directory)
 SPIRAL_ASM_OBJ_LINUX = spiral-linux.o
 SPIRAL_ASM_OBJ_DOS = spiral.o
-DOS_ASM_OBJ = dos.o
+DOS_ASM_OBJ = palette.o
 
 # Compilers
 CC_LINUX = gcc
@@ -67,8 +67,8 @@ $(SPIRAL_ASM_OBJ_DOS): $(ASM_SRC)
 	@echo "\033[1mAssembling $(ASM_SRC) for DOS...\033[0m"
 	$(ASM) $(ASMFLAGS_DOS) -o $@ $<
 
-$(DOS_ASM_OBJ): $(DOS_ASM_SRC)
-	@echo "\033[1mAssembling $(DOS_ASM_SRC) for DOS...\033[0m"
+$(DOS_ASM_OBJ): $(PALETTE_ASM_SRC)
+	@echo "\033[1mAssembling $(PALETTE_ASM_SRC) for DOS...\033[0m"
 	$(ASM) $(ASMFLAGS_DOS) -o $@ $<
 
 # Linux build (SDL2)

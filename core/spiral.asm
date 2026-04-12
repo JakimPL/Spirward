@@ -5,7 +5,6 @@
     %define REG(x) e%+x
     %define MEM(offset) [image + offset]
     %endif
-    %define MEM_REG(offset) MEM(REG(offset))
 
     %define PX (REG(si))
     %define PY (REG(si) + 2)
@@ -144,8 +143,13 @@ update_image:
     shr cl, 4                          ; light ← (i - I_MIN) / 16     [0...12 range]
     mul cl                             ; color = pattern × light      [0...60 range]
 
-.draw_pixel:
-    call draw_pixel
+draw_pixel:
+    %ifndef COM
+    movzx ebx, bx
+    %endif
+    mov ah, al
+    mov MEM(REG(bx)), ax               ; write two pixels for a thicker spiral
+    mov MEM(REG(bx) + REAL_SCREEN_WIDTH), ax
 
 ; overlay:
 ; mov cl, 160
@@ -188,22 +192,14 @@ u_loop_exit:
 ; end for u
 
 draw_exit:
-    inc word [REG(bp) + 2]             ; frame_count
-    %ifndef COM
-    fstp st0                           ; ignore unbalanced FPU stack?
-    popa
-    %endif
-    ret
+    inc word [REG(bp) + 2]             ; frame_count++
 
-draw_pixel:
     %ifndef COM
-    movzx ebx, bx
-    %endif
-    mov ah, al
-    mov MEM(REG(bx)), ax               ; write two pixels for a thicker spiral
-    mov MEM(REG(bx) + REAL_SCREEN_WIDTH), ax
+; fstp st0                           ; ignore unbalanced FPU stack?
+    popa
     ret
 
     %include "core/data.asm"
     %include "core/consts.asm"
     %include "core/vars.asm"
+    %endif

@@ -1,16 +1,21 @@
     org 100h
 
+    %include "core/data.asm"
+    %include "core/consts.asm"
+    %include "core/vars.asm"
+
     section .text
 start:
 .set_video_mode:
     mov ax, VIDEO_MODE_13H
     int BIOS_VIDEO_INTERRUPT
 
+palette:
 ; mov dx, PALETTE_INDEX_PORT
 ; int BIOS_VIDEO_INTERRUPT
+    %include "core/palette.asm"
 
-    %include "core/dos.asm"
-
+    section .text
 main_loop:
     push VIDEO_MEMORY_SEGMENT
     pop es
@@ -23,7 +28,7 @@ wait_for_retrace:
     jz .wait_start
 
 frame:
-    call draw
+    %include "core/spiral.asm"
 
 check_input:
     mov ah, 0x01
@@ -34,4 +39,3 @@ check_input:
 ; mov ax, TEXT_MODE_3H
     int BIOS_VIDEO_INTERRUPT
 
-    %include "core/spiral.asm"
