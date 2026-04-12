@@ -46,6 +46,8 @@ draw_spiral:
 
     fadd dword [OFFSET]
     fst dword [OFFSET]                 ; offset ← offset + offset_delta
+; fmul st0, st0
+; fsin
 
 .loop_init:
     mov bl, I_MIN
@@ -72,10 +74,8 @@ calculate_uv_values:
     fist word [U]                      ; u_int ← ⌊u⌋
 
 .skip_cylindrical_effect:
-    mov ax, [REG(bp) + 2]
-    shr ax, 1
-    cmp al, CYLINDRICAL_EFFECT_DELAY   ; frame_count < CYLINDRICAL_EFFECT_DELAY
-    jb calculate_initial_point
+    cmp byte [REG(bp) + 3], 0
+    jz calculate_initial_point
 
 cylindrical_effect:
 .u_int:
@@ -126,12 +126,7 @@ v_loop:
     fxch
 
 update_image:
-    mov cl, bl
-.map_to_screen:
-    mov bx, [PY]
-    imul bx, REAL_SCREEN_WIDTH
-    add bx, [PX]
-    add bx, CENTER_OFFSET
+    mov dl, bl
 .apply_pattern:
     mov al, [U]
     xor al, [V]
@@ -139,43 +134,41 @@ update_image:
     shl al, 2
     inc al                             ; pattern ← 4 × (u_int ⊕ v_int) + 1  [1 or 5]
 .apply_lighting:
-    sub cl, I_MIN
-    shr cl, 4                          ; light ← (i - I_MIN) / 16     [0...12 range]
-    mul cl                             ; color = pattern × light      [0...60 range]
+    sub dl, I_MIN
+    shr dl, 4                          ; light ← (i - I_MIN) / 16     [0...12 range]
+    mul dl                             ; color = pattern × light      [0...60 range]
+.map_to_screen:
+    mov bx, [PY]
+    imul bx, REAL_SCREEN_WIDTH
+    add bx, [PX]
+    add bx, CENTER_OFFSET
 
-draw_pixel:
-    %ifndef COM
-    movzx ebx, bx
-    %endif
-    mov ah, al
-    mov MEM(REG(bx)), ax               ; write two pixels for a thicker spiral
-    mov MEM(REG(bx) + REAL_SCREEN_WIDTH), ax
+    call draw_pixel
+overlay:
+    mov cl, I_MAX + 20
+    sub cl, [i]
+    shr cl, 6
+    jz v_loop_end
 
-; overlay:
-; mov cl, 160
-; shl cx, 1
-; sub cx, word [i]
-; shr cx, 6
-; jz v_loop_end
+    shr al, OVERLAY_RIGHT_SHIFT
+.multi_draw:
+    shl bx, 1
+    add bx, MAGIC_NUMBER
+    neg bx
 
-; shr al, OVERLAY_RIGHT_SHIFT
-; .multi_draw:
-; shl bx, 1
-; add bx, MAGIC_NUMBER
-; neg bx
+    add al, MEM(REG(bx))
+    and al, MAX_COLOR
 
-; add al, MEM(REG(bx))
-; and al, MAX_COLOR
+.draw_overlay_pixel:
+    call draw_pixel
 
-; .draw_overlay_pixel:
-; call draw_pixel
-
-; shr al, 2
-; loop .multi_draw
+    shr al, 2
+    loop .multi_draw
 
 v_loop_end:
     popa
-    loop v_loop
+    dec cl
+    jnz v_loop
 v_loop_exit:
     popa
     fstp st0
@@ -195,11 +188,12 @@ draw_exit:
     inc word [REG(bp) + 2]             ; frame_count++
 
     %ifndef COM
-; fstp st0                           ; ignore unbalanced FPU stack?
+    fstp st0                           ; ignore unbalanced FPU stack?
     popa
     ret
 
     %include "core/data.asm"
     %include "core/consts.asm"
     %include "core/vars.asm"
+    %include "core/pixel.asm"
     %endif

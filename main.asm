@@ -39,3 +39,4 @@ check_input:
 ; mov ax, TEXT_MODE_3H
     int BIOS_VIDEO_INTERRUPT
 
+    %include "core/pixel.asm"
