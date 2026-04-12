@@ -9,6 +9,9 @@
 
     section .text
 draw:
+    %ifndef COM
+    pusha
+    %endif
 clear_buffers:
 .clear_video_buffer:
     %ifdef COM
@@ -25,19 +28,15 @@ clear_buffers:
     %endif
 
 draw_spiral:
-    %ifndef COM
-    pusha
-    %endif
-
     mov REG(si), px_int
-    mov REG(di), offset
+    mov REG(di), f_v
     mov REG(bp), focal_length
 .increment_offset:
     fild word [REG(bp)]
     fld1
-    fdiv st0, st1
+    fdiv st0, st1                      ; offset_delta ← 1 / focal_length
 
-    fadd dword [REG(di) + 4]           ; offset ← offset + offset_delta
+    fadd dword [REG(di) + 4]
     fst dword [REG(di) + 4]            ; offset ← offset + offset_delta
 
 .loop_init:
@@ -100,10 +99,10 @@ calculate_initial_point:
 
 ; for v = 0 to i - 1
 v_loop_start:
-    mov dx, bx
+    mov cx, bx
 
 v_loop:
-    push dx
+    pusha
 .increment_v:
     fld st2
     fadd dword [REG(di)]
@@ -125,11 +124,10 @@ v_loop:
 
 update_image:
 .map_to_screen:
-    mov ax, [REG(si) + 2]
-    imul ax, REAL_SCREEN_WIDTH
-    add ax, [REG(si)]
-    add ax, CENTER_OFFSET
-    mov bx, ax
+    mov bx, [REG(si) + 2]
+    imul bx, REAL_SCREEN_WIDTH
+    add bx, [REG(si)]
+    add bx, CENTER_OFFSET
 .apply_pattern:
     mov al, [REG(si) + 4]
     xor al, [REG(si) + 6]
@@ -165,9 +163,8 @@ update_image:
 ; loop .multi_draw
 
 v_loop_end:
-    pop dx
-    dec dx
-    jnz v_loop
+    popa
+    loop v_loop
 v_loop_exit:
     popa
     fstp st0
@@ -177,18 +174,18 @@ v_loop_exit:
 
 u_loop_exit:
     inc bl
-; cmp bl, [frame_count]
-; ja draw_exit
+    cmp bl, [frame_count]
+    ja draw_exit
     cmp bl, I_MAX + 1
     jb u_loop_start
 ; end for u
 
 draw_exit:
-; fstp st0                           ; ignore unbalanced FPU stack?
+    inc word [REG(bp) + 4]             ; frame_count
     %ifndef COM
+    fstp st0                           ; ignore unbalanced FPU stack?
     popa
     %endif
-    inc word [REG(bp) + 4]             ; frame_count
     ret
 
 draw_pixel:
