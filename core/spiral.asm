@@ -153,7 +153,6 @@ overlay:
     shr al, OVERLAY_RIGHT_SHIFT
 .multi_draw:
     shl bx, 1
-    add bx, MAGIC_NUMBER
     neg bx
 
     add al, MEM(REG(bx))
