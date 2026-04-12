@@ -11,9 +11,10 @@
     %define PY (REG(si) + 2)
     %define U (REG(si) + 4)
     %define V (REG(si) + 6)
-    %define I (REG(si) + 8)
-    %define F_V REG(di)
-    %define OFFSET REG(di + 4)
+
+    %define I (REG(di))
+    %define F_V (REG(di) + 4)
+    %define OFFSET (REG(di) + 8)
 
     section .text
 draw:
@@ -37,7 +38,7 @@ clear_buffers:
 
 draw_spiral:
     mov REG(si), px
-    mov REG(di), f_v
+    mov REG(di), i
     mov REG(bp), focal_length
 .increment_offset:
     fild word [REG(bp)]
@@ -53,7 +54,6 @@ draw_spiral:
 ; for i = I_MIN to I_MAX
 u_loop_start:
     pusha
-    shl bx, 1                          ; i ← 2i
     mov [I], bx
 
 u_loop:
@@ -140,9 +140,9 @@ update_image:
     shl al, 2
     inc al                             ; pattern ← 4 × (u_int ⊕ v_int) + 1  [1 or 5]
 .apply_lighting:
-    sub cl, 2 * I_MIN
-    shr cl, 4                          ; light ← (i - 2 I_MIN) / 16 [0...12 range]
-    mul cl                             ; color = pattern × light    [0...60 range]
+    sub cl, I_MIN
+    shr cl, 4                          ; light ← (i - I_MIN) / 16     [0...12 range]
+    mul cl                             ; color = pattern × light      [0...60 range]
 
 .draw_pixel:
     call draw_pixel

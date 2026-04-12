@@ -30,4 +30,5 @@ set_palette:
     ret
 
     global set_palette
+    extern offset
     %endif

@@ -9,7 +9,7 @@ u:
 v:
     resw 1
 i:
-    resw 1
+    resd 1
 f_v:
     resd 1
 offset:

@@ -19,8 +19,8 @@
     HALF_SCREEN_WIDTH equ SCREEN_WIDTH / 2
     HALF_SCREEN_HEIGHT equ SCREEN_HEIGHT / 2
 
-    I_MIN equ 10
-    I_MAX equ 110                      ; COLOR_MAX = 5 * ((I_MAX - I_MIN) >> 3)
+    I_MIN equ 20
+    I_MAX equ 220                      ; COLOR_MAX = 5 * ((I_MAX - I_MIN) >> 4) = 60 < MAX_COLOR
     FOCAL_LENGTH equ 176               ; U_MIN = 176π / (2 * I_MAX) - 0.5 ≈ 2.01 is almost an integer
 
     CYLINDRICAL_EFFECT_DELAY equ 138   ; π × FOCAL_LENGTH / 4

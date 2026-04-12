@@ -38,6 +38,7 @@ int main(void) {
 #else
     SDL_Event event;
     int running = 1;
+    offset = 0.0f;
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT ||
