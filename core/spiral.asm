@@ -7,6 +7,8 @@
     %endif
     %define MEM_REG(offset) MEM(REG(offset))
 
+    %define I (REG(si) + 10)
+
     section .text
 draw:
     %ifndef COM
@@ -46,7 +48,7 @@ draw_spiral:
 u_loop_start:
     pusha
     shl bx, 1
-    mov [i], bx
+    mov [I], bx
 
 u_loop:
 calculate_uv_values:
@@ -54,7 +56,7 @@ calculate_uv_values:
     fst dword [REG(di)]                ; v ← offset
 .v_step:
     fldpi
-    fidiv word [REG(si) + 10]          ; v_step ← π / i
+    fidiv word [I]                     ; v_step ← π / i
 .v_step_2x:
     fld st0
     fadd st0, st0                      ; 2 v_step ← 2π / i
@@ -65,8 +67,8 @@ calculate_uv_values:
     fist word [REG(si) + 4]            ; u_int ← ⌊u⌋
 
 .skip_cylindrical_effect:
-    cmp word [REG(bp) + 4], CYLINDRICAL_EFFECT_DELAY ; frame_count < CYLINDRICAL_EFFECT_DELAY
-    jb .calculate_light
+    cmp word [REG(bp) + 2], CYLINDRICAL_EFFECT_DELAY ; frame_count < CYLINDRICAL_EFFECT_DELAY
+    jb calculate_initial_point
 
 .u_int:
     fld st0
@@ -79,12 +81,6 @@ calculate_uv_values:
     fabs
     fmulp st1, st0
     faddp st1, st0                     ; u ← u + (⌊u⌋ - u) × |sin(offset)|
-
-.calculate_light:
-    fld st0
-    fmul st0                           ; depth ← u²
-    fidivr word [REG(bp) + 2]
-    fistp word [REG(si) + 8]           ; light ← attenuation_factor / depth
 
 calculate_initial_point:
     fadd st0, st3                      ; u ← u + offset
@@ -109,7 +105,7 @@ v_loop:
     fst dword [REG(di)]                ; v ← v + 2 v_step
 .checkerboard_v:
     fld st0
-    fmul dword [REG(bp) + 6]           ; checkerboard_v ← v / checkerboard_size
+    fmul dword [REG(bp) + 4]           ; checkerboard_v ← v / checkerboard_size
     fistp word [REG(si) + 6]           ; v_int ← ⌊v / checkerboard_size⌋
 .increment_px_py:
     fadd dword [REG(di) + 4]           ; double v rotation
@@ -123,6 +119,7 @@ v_loop:
     fxch
 
 update_image:
+    mov cx, bx
 .map_to_screen:
     mov bx, [REG(si) + 2]
     imul bx, REAL_SCREEN_WIDTH
@@ -135,7 +132,9 @@ update_image:
     shl al, 2
     inc al                             ; color ← 4 (checkerboard_u ⊕ checkerboard_v) + 1
 .apply_lighting:
-    mul word [REG(si) + 8]             ; color ← color × light
+    sub cx, I_MIN
+    shr cx, 4
+    mul cl
 
 .draw_pixel:
     call draw_pixel
@@ -174,14 +173,14 @@ v_loop_exit:
 
 u_loop_exit:
     inc bl
-    cmp bl, [frame_count]
+    cmp bl, [REG(bp) + 2]              ; bl > frame_count
     ja draw_exit
     cmp bl, I_MAX + 1
     jb u_loop_start
 ; end for u
 
 draw_exit:
-    inc word [REG(bp) + 4]             ; frame_count
+    inc word [REG(bp) + 2]             ; frame_count
     %ifndef COM
     fstp st0                           ; ignore unbalanced FPU stack?
     popa
