@@ -47,7 +47,7 @@ draw_spiral:
 ; for i = I_MIN to I_MAX
 u_loop_start:
     pusha
-    shl bx, 1
+    shl bx, 1                          ; i ← 2i
     mov [I], bx
 
 u_loop:
@@ -70,9 +70,9 @@ calculate_uv_values:
     cmp word [REG(bp) + 2], CYLINDRICAL_EFFECT_DELAY ; frame_count < CYLINDRICAL_EFFECT_DELAY
     jb calculate_initial_point
 
+cylindrical_effect:
 .u_int:
-    fld st0
-    frndint                            ; snap to integer for a cylindrical effect
+    fild word [REG(si) + 4]
 
 .u_combined:
     fsub st0, st1
@@ -130,11 +130,11 @@ update_image:
     xor al, [REG(si) + 6]
     and al, 0x01
     shl al, 2
-    inc al                             ; color ← 4 (checkerboard_u ⊕ checkerboard_v) + 1
+    inc al                             ; pattern ← 4 × (u_int ⊕ v_int) + 1
 .apply_lighting:
-    sub cx, I_MIN
-    shr cx, 4
-    mul cl
+    sub cl, 2 * I_MIN
+    shr cx, 4                          ; light ← (i - 2 I_MIN) / 16 [0...13 range]
+    mul cl                             ; color = pattern × light [0...65 range]
 
 .draw_pixel:
     call draw_pixel
