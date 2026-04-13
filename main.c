@@ -25,7 +25,7 @@ void frame() {
     video_present();
 }
 
-int main(void) {
+int main(int, char**) {
     if (video_init() != 0) {
         return 1;
     }

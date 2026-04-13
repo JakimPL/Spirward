@@ -187,7 +187,7 @@ draw_exit:
     inc word [REG(bp) + 2]             ; frame_count++
 
     %ifndef COM
-    fstp st0                           ; ignore unbalanced FPU stack?
+    ; fstp st0                           ; ignore unbalanced FPU stack?
     popa
     ret
 

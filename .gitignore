@@ -12,7 +12,5 @@
 *.COM
 *.EXE
 
-*-linux
-debug
-.spiral
-.spiral.*
+bin/
+build/

@@ -11,8 +11,6 @@ start:
     int BIOS_VIDEO_INTERRUPT
 
 palette:
-; mov dx, PALETTE_INDEX_PORT
-; int BIOS_VIDEO_INTERRUPT
     %include "core/palette.asm"
 
     section .text
@@ -27,6 +25,7 @@ wait_for_retrace:
     test al, VERTICAL_RETRACE_STATUS_BIT
     jz .wait_start
 
+    fninit
 frame:
     %include "core/spiral.asm"
 
