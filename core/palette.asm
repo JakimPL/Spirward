@@ -24,6 +24,7 @@ set_palette:
     out dx, al                         ; B
     inc bx
     loop .palette_loop
+
     %endif
     %ifndef COM
     popa

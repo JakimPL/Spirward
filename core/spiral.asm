@@ -132,7 +132,7 @@ update_image:
     xor al, [V]
     and al, 0x01
     shl al, 2
-    inc al                             ; pattern ← 4 × (u_int ⊕ v_int) + 1  [1 or 5]
+    inc ax                             ; pattern ← 4 × (u_int ⊕ v_int) + 1  [1 or 5]
 .apply_lighting:
     sub dl, I_MIN
     shr dl, 4                          ; light ← (i - I_MIN) / 16     [0...12 range]
@@ -166,7 +166,7 @@ overlay:
 
 v_loop_end:
     popa
-    dec cl
+    dec cx
     jnz v_loop
 v_loop_exit:
     popa
@@ -176,7 +176,7 @@ v_loop_exit:
 ; end for v
 
 u_loop_exit:
-    inc bl
+    inc bx
     cmp bl, [REG(bp) + 2]              ; bl > frame_count
     ja draw_exit
     cmp bl, I_MAX + 1
@@ -187,7 +187,7 @@ draw_exit:
     inc word [REG(bp) + 2]             ; frame_count++
 
     %ifndef COM
-    ; fstp st0                           ; ignore unbalanced FPU stack?
+; fstp st0                           ; ignore unbalanced FPU stack?
     popa
     ret
 
