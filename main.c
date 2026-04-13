@@ -12,14 +12,9 @@ void render() {
         for (int x = 0; x < REAL_SCREEN_WIDTH; x++) {
             unsigned short array_index = y * REAL_SCREEN_WIDTH + x;
             unsigned char color = image[array_index];
-            for (int dx = 0; dx <= 0; dx++) {
-                int px = x + dx;
-                int py = y;
-                if (px >= 0 && px < REAL_SCREEN_WIDTH && py >= 0 && py < REAL_SCREEN_HEIGHT) {
-                    video_set_pixel(px, py, color);
-                }
+            if (x >= 0 && x < REAL_SCREEN_WIDTH && y >= 0 && y < REAL_SCREEN_HEIGHT) {
+                video_set_pixel(x, y, color);
             }
-            image[array_index] = 0;
         }
     }
 }
@@ -30,7 +25,7 @@ void frame() {
     video_present();
 }
 
-int main(void) {
+int main(int, char**) {
     if (video_init() != 0) {
         return 1;
     }
@@ -43,6 +38,7 @@ int main(void) {
 #else
     SDL_Event event;
     int running = 1;
+    offset = 0.0f;
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT ||

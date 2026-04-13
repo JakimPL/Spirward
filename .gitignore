@@ -8,10 +8,9 @@
 *.o
 *.com
 *.exe
+*.SWP
 *.COM
 *.EXE
 
-*-linux
-debug
-.spiral
-.spiral.*
+bin/
+build/

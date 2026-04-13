@@ -1,82 +1,93 @@
+    %ifdef COM
+    %define REG(x) x
+    %define MEM(offset) [es:offset]
+    %else
+    %define REG(x) e%+x
+    %define MEM(offset) [image + offset]
+    %endif
+
+    %define PX (REG(si))
+    %define PY (REG(si) + 2)
+    %define U (REG(si) + 4)
+    %define V (REG(si) + 6)
+
+    %define I (REG(di))
+    %define F_V (REG(di) + 4)
+    %define OFFSET (REG(di) + 8)
+
     section .text
 draw:
+    %ifndef COM
+    pusha
+    %endif
 clear_buffers:
-    xor ax, ax
 .clear_video_buffer:
-    %ifdef DOS
+    %ifdef COM
+    xor ax, ax
     xor di, di
     mov cx, VIDEO_BUFFER_SIZE
     rep stosw
-    %endif
-    %ifdef LINUX
-    mov edi, image
+    %else
+    xor ebx, ebx
     xor eax, eax
-    mov ecx, BUFFER_SIZE
-    rep stosb
+    mov edi, image
+    mov ecx, BUFFER_SIZE / 4
+    rep stosd
     %endif
 
 draw_spiral:
-    pusha
+    mov REG(si), px
+    mov REG(di), i
+    mov REG(bp), focal_length
 .increment_offset:
+    fild word [REG(bp)]
     fld1
-    fidiv word [focal_length]          ; offset_delta ← 1 / focal_length
-    %ifdef DOS
-    mov si, offset
-    fadd dword [si]
-    fst dword [si]                     ; offset ← offset + offset_delta
-    %endif
-    %ifdef LINUX
-    mov esi, offset
-    fadd dword [esi]
-    fst dword [esi]                    ; offset ← offset + offset_delta
-    %endif
-.loop_init:
-    mov al, U_MIN
+    fdiv st0, st1                      ; offset_delta ← 1 / focal_length
 
-; for u = U_MIN to U_MAX
+    fadd dword [OFFSET]
+    fst dword [OFFSET]                 ; offset ← offset + offset_delta
+; fmul st0, st0
+; fsin
+
+.loop_init:
+    mov bl, I_MIN
+
+; for i = I_MIN to I_MAX
 u_loop_start:
-    mov [i], ax
+    pusha
+    mov [I], bx
 
 u_loop:
-    pusha
 calculate_uv_values:
 .v:
-    %ifdef DOS
-    mov di, f_v
-    fst dword [di]                     ; v ← offset
-    %endif
-    %ifdef LINUX
-    mov edi, f_v
-    fst dword [edi]                    ; v ← offset
-    %endif
+    fst dword [F_V]                    ; v ← offset
 .v_step:
     fldpi
-    fidiv word [i]                     ; v_step ← π / i
+    fidiv word [I]                     ; v_step ← π / i
 .v_step_2x:
     fld st0
     fadd st0, st0                      ; 2 v_step ← 2π / i
     fxch
 .u:
     fld st0
-    fimul word [focal_length]          ; u ← v_step × focal_length
-    fld st0
-    frndint                            ; snap to integer for a cylindrical effect    
+    fmul st0, st4                      ; u ← v_step × focal_length
+    fist word [U]                      ; u_int ← ⌊u⌋
+
+.skip_cylindrical_effect:
+    cmp byte [REG(bp) + 3], 0
+    jz calculate_initial_point
+
+cylindrical_effect:
 .u_int:
-    fist word [u_int]                  ; checkerboard_u ← ⌊u⌋
+    fild word [U]
 
 .u_combined:
-    fsub st0, st1                     
+    fsub st0, st1
     fld st4
     fsin
     fabs
-    fmulp st1, st0                   
+    fmulp st1, st0
     faddp st1, st0                     ; u ← u + (⌊u⌋ - u) × |sin(offset)|
-
-.calculate_light:
-    fld st0
-    fadd dword [attenuation_a]
-    fdivr dword [attenuation_b]
-    fistp word [light]                 ; light ← b / (a + u)
 
 calculate_initial_point:
     fadd st0, st3                      ; u ← u + offset
@@ -91,73 +102,72 @@ calculate_initial_point:
 
 ; for v = 0 to i - 1
 v_loop_start:
-    mov cl, al
+    mov cx, bx
 
 v_loop:
+    pusha
 .increment_v:
     fld st2
-    %ifdef DOS
-    fadd dword [di]
-    fst dword [di]                     ; v ← v + 2 v_step
-    %endif
-    %ifdef LINUX
-    fadd dword [edi]
-    fst dword [edi]                    ; v ← v + 2 v_step
-    %endif
+    fadd dword [F_V]
+    fst dword [F_V]                    ; v ← v + 2 v_step
 .checkerboard_v:
     fld st0
-    fdiv dword [checkerboard_size]
-    fistp word [v_int]                 ; checkerboard_v ← ⌊v / checkerboard_size⌋
-.increment_px_py:                      ; double v rotation
-    %ifdef DOS
-    fadd dword [si]
-    %endif
-    %ifdef LINUX
-    fadd dword [esi]
-    %endif
+    fmul dword [REG(bp) + 4]           ; checkerboard_v ← v / checkerboard_size
+    fistp word [V]                     ; v_int ← ⌊v / checkerboard_size⌋
+.increment_px_py:
+    fadd dword [OFFSET]                ; double v rotation
     fsincos
     fsubp st3, st0                     ; py ← py - cos(v + offset)
     fsubp st1, st0                     ; px ← px - sin(v + offset)
-    fist word [px_int]
+.save_px_py:
+    fist word [PX]                     ; px_int ← ⌊px × checkerboard_size⌋
     fxch
-    fist word [py_int]
+    fist word [PY]                     ; py_int ← ⌊py × checkerboard_size⌋
     fxch
 
 update_image:
-.map_to_screen:
-    mov ax, [py_int]
-; cmp ax, REAL_SCREEN_HEIGHT ; remove?
-; jae .exit
-    imul ax, REAL_SCREEN_WIDTH
-    add ax, [px_int]
-; cmp bl, REAL_SCREEN_WIDTH
-; jae .exit
-    add ax, CENTER_OFFSET
-    mov bx, ax
-    %ifdef LINUX
-    mov [array_index], ax
-    %endif
+    mov dl, bl
 .apply_pattern:
-    mov al, [u_int]
-    xor al, [v_int]
+    mov al, [U]
+    xor al, [V]
     and al, 0x01
     shl al, 2
-    inc al                             ; color ← 4 (checkerboard_u ⊕ checkerboard_v) + 1
+    inc al                             ; pattern ← 4 × (u_int ⊕ v_int) + 1  [1 or 5]
 .apply_lighting:
-    mul word [light]
-    %ifdef DOS
-    mov ah, al
-    mov [es:bx], ax
-    %endif
-    %ifdef LINUX
-    mov [color], ax
-.draw_pixel:
-    push cx
-    call draw_pixel
-    pop cx
-    %endif
+    sub dl, I_MIN
+    shr dl, 4                          ; light ← (i - I_MIN) / 16     [0...12 range]
+    mul dl                             ; color = pattern × light      [0...60 range]
+.map_to_screen:
+    mov bx, [PY]
+    imul bx, REAL_SCREEN_WIDTH
+    add bx, [PX]
+    add bx, CENTER_OFFSET
 
-    loop v_loop
+    call draw_pixel
+overlay:
+    mov cl, I_MAX + 20
+    sub cl, [i]
+    shr cl, 6
+    jz v_loop_end
+
+    shr al, OVERLAY_RIGHT_SHIFT
+.multi_draw:
+    shl bx, 1
+    neg bx
+
+    add al, MEM(REG(bx))
+    and al, MAX_COLOR
+
+.draw_overlay_pixel:
+    call draw_pixel
+
+    shr al, 2
+    loop .multi_draw
+
+v_loop_end:
+    popa
+    dec cl
+    jnz v_loop
 v_loop_exit:
     popa
     fstp st0
@@ -166,15 +176,23 @@ v_loop_exit:
 ; end for v
 
 u_loop_exit:
-    inc al
-    cmp al, U_MAX + 1
+    inc bl
+    cmp bl, [REG(bp) + 2]              ; bl > frame_count
+    ja draw_exit
+    cmp bl, I_MAX + 1
     jb u_loop_start
 ; end for u
 
 draw_exit:
-    fstp st0
+    inc word [REG(bp) + 2]             ; frame_count++
+
+    %ifndef COM
+    ; fstp st0                           ; ignore unbalanced FPU stack?
     popa
     ret
 
+    %include "core/data.asm"
     %include "core/consts.asm"
     %include "core/vars.asm"
+    %include "core/pixel.asm"
+    %endif
