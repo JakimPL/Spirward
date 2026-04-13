@@ -13,11 +13,6 @@
     CENTER_OFFSET equ 0x7DA0
     BUFFER_SIZE equ 0x10000
 
-    SCREEN_WIDTH equ 160
-    SCREEN_HEIGHT equ 100
-    HALF_SCREEN_WIDTH equ SCREEN_WIDTH / 2
-    HALF_SCREEN_HEIGHT equ SCREEN_HEIGHT / 2
-
     I_MIN equ 1
     I_MAX equ 200                      ; COLOR_MAX = 5 * ((I_MAX - I_MIN) >> 4) = 60 < MAX_COLOR
     FOCAL_LENGTH equ 96                ; U_MIN = 96π / I_MAX - 0.5 ≈ 1.008 is almost an integer
