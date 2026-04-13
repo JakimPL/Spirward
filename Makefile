@@ -124,7 +124,10 @@ $(DOS_ASM_OBJ): $(PALETTE_ASM_SRC) | $(DOS_BUILD)
 	$(ASM) $(ASMFLAGS_DOS) -o $@ $<
 
 # Linux build (SDL2)
-.PHONY: linux | $(BIN_DIR)
+.PHONY: linux
+linux: $(LINUX_OUT)
+
+$(LINUX_OUT): $(MAIN_SRC) $(SPIRAL_SOURCES) $(SDL_SRC) $(SPIRAL_ASM_OBJ_LINUX) | $(BIN_DIR)
 	@echo "\033[1;34m==> Building for Linux (SDL2)\033[0m"
 	$(CC_LINUX) $(CFLAGS_LINUX) -o $@ $(MAIN_SRC) $(SPIRAL_SOURCES) $(SDL_SRC) $(SPIRAL_ASM_OBJ_LINUX) $(LDFLAGS_LINUX)
 	@echo "\033[1;32mLinux build complete: $(LINUX_OUT)\033[0m"
