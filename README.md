@@ -2,7 +2,88 @@
 
 A tiny (256b) demo for DOS* featuring forward projection of a spiral.
 
+## Building
+
+### Supported Platforms
+
+This demo supports multiple build targets:
+
+- **Linux** - Native build with SDL2 for visualization and testing
+- **Windows** - Cross-compiled with MinGW32 and SDL2
+- **DOS (EXE)** - Cross-compiled with DJGPP for DOS systems
+- **DOS (COM)** - Pure assembly 256-byte demo, the original target format
+
+### Requirements
+
+To build all targets, you'll need:
+
+- **NASM** assembler (for all builds)
+- **GCC** (for Linux builds)
+- **MinGW32 cross-compiler** (`i686-w64-mingw32-gcc`) for Windows builds
+- **DJGPP cross-compiler** (`i586-pc-msdosdjgpp-gcc`) for DOS builds
+- **SDL2** development libraries (for Linux and Windows builds)
+
+For just the 256-byte COM demo, you only need NASM.
+
+### Building the Demo
+
+The project uses a Makefile with several targets:
+
+```bash
+# Build for your current platform (auto-detected) + COM
+make
+
+# Build specific platforms
+make linux          # Build Linux version with SDL2
+make windows        # Build Windows version (MinGW32)
+make dos            # Build DOS EXE version (DJGPP)
+make com            # Build 256-byte COM file
+
+# Build everything
+make all-targets    # Cross-compile for all platforms
+
+# Build with debug symbols
+make DEBUG=1 linux
+make DEBUG=1 all-targets
+
+# Run the demo (builds and runs for current platform)
+make run
+
+# View instruction sizes from listing file
+make sizes
+
+# Clean build artifacts
+make clean
+```
+
+The compiled binaries are placed in the `bin/` directory:
+- `spirward-linux` - Linux executable
+- `spirward-win.exe` - Windows executable
+- `spirward.exe` - DOS executable
+- `spirward.com` - 256-byte DOS COM file
+
+### Running the Demo
+
+**On Linux:**
+```bash
+./bin/spirward-linux
+```
+
+**On Windows:**
+```bash
+bin\spirward-win.exe
+```
+
+**On DOS** (or DOSBox):
+```
+spirward.com
+```
+
+The COM file is the original 256-byte demo format and runs directly on DOS or in DOSBox.
+
 ## Math
+
+If you are interested in the math behind this demo, here it goes.
 
 ### The Spiral Surface
 
