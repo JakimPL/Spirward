@@ -16,7 +16,6 @@
 
     %define FOCAL (REG(bp))
     %define FRAME_COUNT (REG(bp) + 2)
-    %define CHECKERBOARD_SIZE (REG(bp) + 4)
 
     section .text
 draw:
@@ -88,10 +87,10 @@ calculate_initial_point:
 .u_sincos:
     fsincos
 .py:
-    fdiv st2                           ; py ← cos u / v_step
+    fdiv st2                           ; px ← sin u / v_step
 .px:
     fxch
-    fdiv st2                           ; px ← sin u / v_step
+    fdiv st2                           ; py ← cos u / v_step
 
 ; for v = 0 to i - 1
 v_loop_start:
@@ -105,14 +104,16 @@ v_loop:
     fadd dword [F_V]
     fst dword [F_V]                    ; v ← v + 2 v_step
 .checkerboard_v:
-    fld st0
-    fmul dword [CHECKERBOARD_SIZE]     ; checkerboard_v ← v / checkerboard_size
-    fistp word [V]                     ; v_int ← ⌊v / checkerboard_size⌋
+    fldpi
+    fdivr st0, st1
+    fadd st0, st0
+    fadd st0, st0
+    fistp word [V]                     ; v_int ← ⌊4v / π⌋
 .increment_px_py:
     fadd st4                           ; double v rotation
     fsincos
-    fsubp st2, st0                     ; px ← px - sin(v + offset)
     fsubp st2, st0                     ; py ← py - cos(v + offset)
+    fsubp st2, st0                     ; px ← px - sin(v + offset)
 .save_px_py:
     fist word [PX]                     ; px_int ← ⌊px × checkerboard_size⌋
     fxch
@@ -120,17 +121,16 @@ v_loop:
     fxch
 
 update_image:
-    mov dl, bl
 .apply_pattern:
-    mov al, [U]
-    xor al, [V]
+    mov al, [V]
+    xor al, [U]
     and al, 0x01
     shl al, 2
     inc ax                             ; pattern ← 4 × (u_int ⊕ v_int) + 1  [1 or 5]
 .apply_lighting:
-    sub dl, I_MIN
-    shr dl, 4                          ; light ← (i - I_MIN) / 16     [0...12 range]
-    mul dl                             ; color = pattern × light      [0...60 range]
+    sub bl, I_MIN
+    shr bl, 4                          ; light ← (i - I_MIN) / 16     [0...12 range]
+    mul bl                             ; color = pattern × light      [0...60 range]
 .map_to_screen:
     mov bx, [PY]
     imul bx, REAL_SCREEN_WIDTH
