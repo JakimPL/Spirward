@@ -5,7 +5,7 @@ draw_pixel:
     %endif
     mov ah, al
     mov MEM(REG(bx)), ax               ; write two pixels for a thicker spiral
-    %ifdef DOUBLE_PIXEL
+    %ifndef SCANLINE
     mov MEM(REG(bx) + REAL_SCREEN_WIDTH), ax
     %endif
     ret

@@ -14,8 +14,8 @@
     %define F_V (REG(di))
     %define I (REG(di) + 4)
 
-    %define FOCAL (REG(bp))
-    %define FRAME_COUNT (REG(bp) + 2)
+    %define FRAME_COUNT (REG(bp))
+    %define FOCAL (REG(bp) + 2)
 
     section .text
 draw:
@@ -40,7 +40,7 @@ clear_buffers:
 draw_spiral:
     mov REG(si), px
     mov REG(di), i
-    mov REG(bp), focal_length
+    mov REG(bp), frame_count
 u_loop_start:
     mov bl, I_MIN
 
@@ -53,7 +53,7 @@ u_loop:
 .load_offset:
     fild word [FOCAL]
     fild word [FRAME_COUNT]
-    fdiv st0, st1                      ; offset ← offset / focal_length
+    fdiv st0, st1                      ; offset ← frame_count / focal_length
 
 calculate_uv_values:
 .v:
@@ -66,9 +66,9 @@ calculate_uv_values:
     fimul word [FOCAL]                 ; u ← v_step × focal_length
     fist word [U]                      ; u_int ← ⌊u⌋
 
-.skip_cylindrical_effect:
-    cmp byte [REG(bp) + 3], 0
-    jz calculate_initial_point
+; .skip_cylindrical_effect:
+; cmp byte [REG(bp) + 3], 0
+; jz calculate_initial_point
 
 cylindrical_effect:
 .u_int:

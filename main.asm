@@ -18,12 +18,14 @@ main_loop:
     push VIDEO_MEMORY_SEGMENT
     pop es
 
+    %ifndef NO_VSYNC
 wait_for_retrace:
     mov dx, VGA_INPUT_STATUS_REGISTER
 .wait_start:
     in al, dx
     test al, VERTICAL_RETRACE_STATUS_BIT
     jz .wait_start
+    %endif
 
 frame:
     %include "core/spiral.asm"
