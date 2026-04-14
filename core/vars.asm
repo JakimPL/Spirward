@@ -8,11 +8,10 @@ u:
     resw 1
 v:
     resw 1
-i:
-    resd 1
+
 f_v:
     resd 1
-offset:
+i:
     resd 1
 
     %ifndef COM

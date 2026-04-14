@@ -11,9 +11,11 @@
     %define U (REG(si) + 4)
     %define V (REG(si) + 6)
 
-    %define I (REG(di))
-    %define F_V (REG(di) + 4)
-    %define OFFSET (REG(di) + 8)
+    %define F_V (REG(di))
+    %define I (REG(di) + 4)
+
+    %define FRAME_COUNT (REG(bp))
+    %define FOCAL (REG(bp) + 2)
 
     section .text
 draw:
@@ -38,44 +40,35 @@ clear_buffers:
 draw_spiral:
     mov REG(si), px
     mov REG(di), i
-    mov REG(bp), focal_length
-.increment_offset:
-    fild word [REG(bp)]
-    fld1
-    fdiv st0, st1                      ; offset_delta ← 1 / focal_length
-
-    fadd dword [OFFSET]
-    fst dword [OFFSET]                 ; offset ← offset + offset_delta
-; fmul st0, st0
-; fsin
-
-.loop_init:
+    mov REG(bp), frame_count
+u_loop_start:
     mov bl, I_MIN
 
 ; for i = I_MIN to I_MAX
-u_loop_start:
+u_loop:
     pusha
     mov [I], bx
 
-u_loop:
+    fninit
+.load_offset:
+    fild word [FOCAL]
+    fild word [FRAME_COUNT]
+    fdiv st0, st1                      ; offset ← frame_count / focal_length
+
 calculate_uv_values:
 .v:
     fst dword [F_V]                    ; v ← offset
 .v_step:
     fldpi
     fidiv word [I]                     ; v_step ← π / i
-.v_step_2x:
-    fld st0
-    fadd st0, st0                      ; 2 v_step ← 2π / i
-    fxch
 .u:
     fld st0
-    fmul st0, st4                      ; u ← v_step × focal_length
+    fimul word [FOCAL]                 ; u ← v_step × focal_length
     fist word [U]                      ; u_int ← ⌊u⌋
 
-.skip_cylindrical_effect:
-    cmp byte [REG(bp) + 3], 0
-    jz calculate_initial_point
+; .skip_cylindrical_effect:
+; cmp byte [REG(bp) + 3], 0
+; jz calculate_initial_point
 
 cylindrical_effect:
 .u_int:
@@ -83,22 +76,21 @@ cylindrical_effect:
 
 .u_combined:
     fsub st0, st1
-    fld st4
+    fld st3
     fsin
     fabs
     fmulp st1, st0
     faddp st1, st0                     ; u ← u + (⌊u⌋ - u) × |sin(offset)|
 
 calculate_initial_point:
-    fadd st0, st3                      ; u ← u + offset
+    fadd st0, st2                      ; u ← u + offset
 .u_sincos:
     fsincos
 .py:
-    fdiv st2                           ; py ← sin u / v_step
+    fdiv st2                           ; px ← sin u / v_step
 .px:
-    fxch st2
-    fdivp st1                          ; px ← cos u / v_step
     fxch
+    fdiv st2                           ; py ← cos u / v_step
 
 ; for v = 0 to i - 1
 v_loop_start:
@@ -108,17 +100,20 @@ v_loop:
     pusha
 .increment_v:
     fld st2
+    fadd st0, st0
     fadd dword [F_V]
     fst dword [F_V]                    ; v ← v + 2 v_step
 .checkerboard_v:
-    fld st0
-    fmul dword [REG(bp) + 4]           ; checkerboard_v ← v / checkerboard_size
-    fistp word [V]                     ; v_int ← ⌊v / checkerboard_size⌋
+    fldpi
+    fdivr st0, st1
+    fadd st0, st0
+    fadd st0, st0
+    fistp word [V]                     ; v_int ← ⌊4v / π⌋
 .increment_px_py:
-    fadd dword [OFFSET]                ; double v rotation
+    fadd st4                           ; double v rotation
     fsincos
-    fsubp st3, st0                     ; py ← py - cos(v + offset)
-    fsubp st1, st0                     ; px ← px - sin(v + offset)
+    fsubp st2, st0                     ; py ← py - cos(v + offset)
+    fsubp st2, st0                     ; px ← px - sin(v + offset)
 .save_px_py:
     fist word [PX]                     ; px_int ← ⌊px × checkerboard_size⌋
     fxch
@@ -126,27 +121,28 @@ v_loop:
     fxch
 
 update_image:
-    mov dl, bl
 .apply_pattern:
-    mov al, [U]
-    xor al, [V]
+    mov al, [V]
+    xor al, [U]
     and al, 0x01
     shl al, 2
-    inc al                             ; pattern ← 4 × (u_int ⊕ v_int) + 1  [1 or 5]
+    inc ax                             ; pattern ← 4 × (u_int ⊕ v_int) + 1  [1 or 5]
 .apply_lighting:
-    sub dl, I_MIN
-    shr dl, 4                          ; light ← (i - I_MIN) / 16     [0...12 range]
-    mul dl                             ; color = pattern × light      [0...60 range]
+    sub bl, I_MIN
+    shr bl, 4                          ; light ← (i - I_MIN) / 16     [0...12 range]
+    mul bl                             ; color = pattern × light      [0...60 range]
 .map_to_screen:
     mov bx, [PY]
     imul bx, REAL_SCREEN_WIDTH
     add bx, [PX]
     add bx, CENTER_OFFSET
 
+.draw_pixel:
     call draw_pixel
+
 overlay:
-    mov cl, I_MAX + 20
-    sub cl, [i]
+    mov cl, I_MAX
+    sub cl, [I]
     shr cl, 6
     jz v_loop_end
 
@@ -154,40 +150,32 @@ overlay:
 .multi_draw:
     shl bx, 1
     neg bx
-
     add al, MEM(REG(bx))
-    and al, MAX_COLOR
 
 .draw_overlay_pixel:
     call draw_pixel
-
-    shr al, 2
     loop .multi_draw
 
 v_loop_end:
     popa
-    dec cl
+    dec cx
     jnz v_loop
 v_loop_exit:
     popa
-    fstp st0
-    fstp st0
-    fstp st0
 ; end for v
 
 u_loop_exit:
-    inc bl
-    cmp bl, [REG(bp) + 2]              ; bl > frame_count
+    inc bx
+    cmp bl, [FRAME_COUNT]              ; bl > frame_count
     ja draw_exit
     cmp bl, I_MAX + 1
-    jb u_loop_start
+    jb u_loop
 ; end for u
 
 draw_exit:
-    inc word [REG(bp) + 2]             ; frame_count++
+    inc word [FRAME_COUNT]             ; frame_count++
 
     %ifndef COM
-    ; fstp st0                           ; ignore unbalanced FPU stack?
     popa
     ret
 

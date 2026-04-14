@@ -7,7 +7,7 @@
     section .text
 start:
 .set_video_mode:
-    mov ax, VIDEO_MODE_13H
+    mov al, VIDEO_MODE_13H
     int BIOS_VIDEO_INTERRUPT
 
 palette:
@@ -18,24 +18,25 @@ main_loop:
     push VIDEO_MEMORY_SEGMENT
     pop es
 
+    %ifndef NO_VSYNC
 wait_for_retrace:
     mov dx, VGA_INPUT_STATUS_REGISTER
 .wait_start:
     in al, dx
     test al, VERTICAL_RETRACE_STATUS_BIT
     jz .wait_start
+    %endif
 
-    fninit
 frame:
     %include "core/spiral.asm"
 
 check_input:
-    mov ah, 0x01
-    int KEYBOARD_INTERRUPT
-    jz main_loop
+    in al, KEYBOARD_DATA_PORT
+    dec ax
+    jnz main_loop
 
 .return_to_dos:
 ; mov ax, TEXT_MODE_3H
-    int BIOS_VIDEO_INTERRUPT
+; int BIOS_VIDEO_INTERRUPT
 
     %include "core/pixel.asm"
