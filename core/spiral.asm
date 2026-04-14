@@ -66,9 +66,9 @@ calculate_uv_values:
     fimul word [FOCAL]                 ; u ← v_step × focal_length
     fist word [U]                      ; u_int ← ⌊u⌋
 
-; .skip_cylindrical_effect:
-; cmp byte [REG(bp) + 3], 0
-; jz calculate_initial_point
+.skip_cylindrical_effect:
+    cmp byte [FRAME_COUNT + 1], 0
+    jz calculate_initial_point
 
 cylindrical_effect:
 .u_int:
