@@ -11,9 +11,13 @@
     %define U (REG(si) + 4)
     %define V (REG(si) + 6)
 
-    %define I (REG(di))
-    %define F_V (REG(di) + 4)
-    %define OFFSET (REG(di) + 8)
+    %define OFFSET (REG(di))
+    %define I (REG(di) + 4)
+    %define F_V (REG(di) + 8)
+
+    %define FOCAL (REG(bp))
+    %define FRAME_COUNT (REG(bp) + 2)
+    %define CHECKERBOARD_SIZE (REG(bp) + 4)
 
     section .text
 draw:
@@ -37,40 +41,32 @@ clear_buffers:
 
 draw_spiral:
     mov REG(si), px
-    mov REG(di), i
+    mov REG(di), offset
     mov REG(bp), focal_length
-.increment_offset:
-    fild word [REG(bp)]
-    fld1
-    fdiv st0, st1                      ; offset_delta ← 1 / focal_length
-
-    fadd dword [OFFSET]
-    fst dword [OFFSET]                 ; offset ← offset + offset_delta
-; fmul st0, st0
-; fsin
-
-.loop_init:
+u_loop_start:
     mov bl, I_MIN
 
+    finit
+.increment_offset:
+    fild word [FOCAL]
+    fild word [OFFSET]
+    fdiv st0, st1                      ; offset ← offset / focal_length
+    inc word [OFFSET]
+
 ; for i = I_MIN to I_MAX
-u_loop_start:
+u_loop:
     pusha
     mov [I], bx
 
-u_loop:
 calculate_uv_values:
 .v:
     fst dword [F_V]                    ; v ← offset
 .v_step:
     fldpi
     fidiv word [I]                     ; v_step ← π / i
-.v_step_2x:
-    fld st0
-    fadd st0, st0                      ; 2 v_step ← 2π / i
-    fxch
 .u:
     fld st0
-    fmul st0, st4                      ; u ← v_step × focal_length
+    fimul word [FOCAL]                 ; u ← v_step × focal_length
     fist word [U]                      ; u_int ← ⌊u⌋
 
 .skip_cylindrical_effect:
@@ -83,21 +79,21 @@ cylindrical_effect:
 
 .u_combined:
     fsub st0, st1
-    fld st4
+    fld st3
     fsin
     fabs
     fmulp st1, st0
     faddp st1, st0                     ; u ← u + (⌊u⌋ - u) × |sin(offset)|
 
 calculate_initial_point:
-    fadd st0, st3                      ; u ← u + offset
+    fadd st0, st2                      ; u ← u + offset
 .u_sincos:
     fsincos
 .py:
-    fdiv st2                           ; py ← sin u / v_step
+    fdiv st2                           ; py ← cos u / v_step
 .px:
-    fxch st2
-    fdivp st1                          ; px ← cos u / v_step
+    fxch
+    fdiv st2                           ; px ← sin u / v_step
     fxch
 
 ; for v = 0 to i - 1
@@ -108,14 +104,15 @@ v_loop:
     pusha
 .increment_v:
     fld st2
+    fadd st0, st0
     fadd dword [F_V]
     fst dword [F_V]                    ; v ← v + 2 v_step
 .checkerboard_v:
     fld st0
-    fmul dword [REG(bp) + 4]           ; checkerboard_v ← v / checkerboard_size
+    fmul dword [CHECKERBOARD_SIZE]     ; checkerboard_v ← v / checkerboard_size
     fistp word [V]                     ; v_int ← ⌊v / checkerboard_size⌋
 .increment_px_py:
-    fadd dword [OFFSET]                ; double v rotation
+    fadd st4                           ; double v rotation
     fsincos
     fsubp st3, st0                     ; py ← py - cos(v + offset)
     fsubp st1, st0                     ; px ← px - sin(v + offset)
@@ -177,17 +174,16 @@ v_loop_exit:
 
 u_loop_exit:
     inc bx
-    cmp bl, [REG(bp) + 2]              ; bl > frame_count
+    cmp bl, [FRAME_COUNT]              ; bl > frame_count
     ja draw_exit
     cmp bl, I_MAX + 1
-    jb u_loop_start
+    jb u_loop
 ; end for u
 
 draw_exit:
-    inc word [REG(bp) + 2]             ; frame_count++
+    inc word [FRAME_COUNT]             ; frame_count++
 
     %ifndef COM
-; fstp st0                           ; ignore unbalanced FPU stack?
     popa
     ret
 
