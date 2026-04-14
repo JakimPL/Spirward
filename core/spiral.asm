@@ -147,10 +147,8 @@ overlay:
     shr cl, 6
     jz v_loop_end
 
-    mov cl, 2
     shr al, OVERLAY_RIGHT_SHIFT
 .multi_draw:
-    shr al, 1
     shl bx, 1
     neg bx
     add al, MEM(REG(bx))

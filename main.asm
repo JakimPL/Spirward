@@ -25,7 +25,6 @@ wait_for_retrace:
     test al, VERTICAL_RETRACE_STATUS_BIT
     jz .wait_start
 
-    fninit
 frame:
     %include "core/spiral.asm"
 
