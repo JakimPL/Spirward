@@ -25,7 +25,7 @@ void frame() {
     video_present();
 }
 
-int main(int, char**) {
+int main(int, char **) {
     if (video_init() != 0) {
         return 1;
     }
@@ -38,7 +38,6 @@ int main(int, char**) {
 #else
     SDL_Event event;
     int running = 1;
-    offset = 0.0f;
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT ||

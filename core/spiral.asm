@@ -11,9 +11,8 @@
     %define U (REG(si) + 4)
     %define V (REG(si) + 6)
 
-    %define OFFSET (REG(di))
+    %define F_V (REG(di))
     %define I (REG(di) + 4)
-    %define F_V (REG(di) + 8)
 
     %define FOCAL (REG(bp))
     %define FRAME_COUNT (REG(bp) + 2)
@@ -41,22 +40,21 @@ clear_buffers:
 
 draw_spiral:
     mov REG(si), px
-    mov REG(di), offset
+    mov REG(di), i
     mov REG(bp), focal_length
 u_loop_start:
     mov bl, I_MIN
-
-    finit
-.increment_offset:
-    fild word [FOCAL]
-    fild word [OFFSET]
-    fdiv st0, st1                      ; offset ← offset / focal_length
-    inc word [OFFSET]
 
 ; for i = I_MIN to I_MAX
 u_loop:
     pusha
     mov [I], bx
+
+    finit
+.load_offset:
+    fild word [FOCAL]
+    fild word [FRAME_COUNT]
+    fdiv st0, st1                      ; offset ← offset / focal_length
 
 calculate_uv_values:
 .v:
@@ -167,9 +165,6 @@ v_loop_end:
     jnz v_loop
 v_loop_exit:
     popa
-    fstp st0
-    fstp st0
-    fstp st0
 ; end for v
 
 u_loop_exit:
