@@ -50,7 +50,7 @@ u_loop:
     pusha
     mov [I], bx
 
-    finit
+    fninit
 .load_offset:
     fild word [FOCAL]
     fild word [FRAME_COUNT]
@@ -92,7 +92,6 @@ calculate_initial_point:
 .px:
     fxch
     fdiv st2                           ; px ← sin u / v_step
-    fxch
 
 ; for v = 0 to i - 1
 v_loop_start:
@@ -112,8 +111,8 @@ v_loop:
 .increment_px_py:
     fadd st4                           ; double v rotation
     fsincos
-    fsubp st3, st0                     ; py ← py - cos(v + offset)
-    fsubp st1, st0                     ; px ← px - sin(v + offset)
+    fsubp st2, st0                     ; px ← px - sin(v + offset)
+    fsubp st2, st0                     ; py ← py - cos(v + offset)
 .save_px_py:
     fist word [PX]                     ; px_int ← ⌊px × checkerboard_size⌋
     fxch
