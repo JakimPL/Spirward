@@ -11,7 +11,7 @@ set_palette:
     %endif
 
     mov dx, PALETTE_DATA_PORT
-    mov cl, 0x40                       ; 64 colors
+    mov cl, 0xFF
 .palette_loop:
     mov al, bl
     out dx, al                         ; R

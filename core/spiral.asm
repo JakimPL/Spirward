@@ -138,25 +138,25 @@ update_image:
     add bx, [PX]
     add bx, CENTER_OFFSET
 
+.draw_pixel:
     call draw_pixel
+
 overlay:
-    mov cl, I_MAX + 20
-    sub cl, [i]
+    mov cl, I_MAX
+    sub cl, [I]
     shr cl, 6
     jz v_loop_end
 
+    mov cl, 2
     shr al, OVERLAY_RIGHT_SHIFT
 .multi_draw:
+    shr al, 1
     shl bx, 1
     neg bx
-
     add al, MEM(REG(bx))
-    and al, MAX_COLOR
 
 .draw_overlay_pixel:
     call draw_pixel
-
-    shr al, 2
     loop .multi_draw
 
 v_loop_end:
