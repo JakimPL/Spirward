@@ -66,7 +66,7 @@ calculate_uv_values:
     fist word [U]                      ; u_int ← ⌊u⌋
 
 .skip_cylindrical_effect:
-    cmp byte [FRAME_COUNT + 1], 0
+    cmp byte [FRAME_COUNT + 1], al
     jz calculate_initial_point
 
 cylindrical_effect:
