@@ -127,8 +127,7 @@ update_image:
     shl al, 2
     inc ax                             ; pattern ← 4 × (u_int ⊕ v_int) + 1  [1 or 5]
 .apply_lighting:
-    sub bl, I_MIN
-    shr bl, 4                          ; light ← (i - I_MIN) / 16     [0...12 range]
+    shr bl, 4                          ; light ← i / 16               [0...12 range]
     mul bl                             ; color = pattern × light      [0...60 range]
 .map_to_screen:
     mov bx, [PY]
