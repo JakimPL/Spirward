@@ -31,7 +31,7 @@ LST_OUT = spirward.lst spirward-raw.lst
 MAIN_SRC = main.c
 SDL_SRC = video/video_sdl.c
 DOS_SRC = video/video_dos.c
-ASM_SRC = core/linux.asm
+ASM_SRC = core/m32.asm
 PALETTE_ASM_SRC = core/palette.asm
 COM_SRC = main.asm
 
@@ -81,9 +81,9 @@ LDFLAGS_DOS = -lm
 # Default target (builds for current platform + com)
 .PHONY: all
 ifeq ($(PLATFORM),Windows)
-all: clean windows com
+all: clean windows dos com
 else ifeq ($(PLATFORM),Linux)
-all: clean linux com
+all: clean linux dos com
 else
 all: clean linux windows dos com
 endif
@@ -143,13 +143,12 @@ $(WINDOWS_OUT): $(MAIN_SRC) $(SDL_SRC) $(SPIRAL_ASM_OBJ_WINDOWS) | $(BIN_DIR)
 	@echo
 
 # DOS build (DJGPP)
-# TODO: Assembly integration needs underscore-prefixed symbols for DJGPP
 .PHONY: dos
 dos: $(DOS_OUT)
 
-$(DOS_OUT): $(MAIN_SRC) $(DOS_SRC) $(SPIRAL_ASM_OBJ_DOS) $(DOS_ASM_OBJ) | $(BIN_DIR)
+$(DOS_OUT): $(MAIN_SRC) $(DOS_SRC) $(SPIRAL_ASM_OBJ_DOS) | $(BIN_DIR)
 	@echo "\033[1;35m==> Building for DOS (DJGPP)\033[0m"
-	$(CC_DOS) $(CFLAGS_DOS) -o $@ $(MAIN_SRC) $(DOS_SRC) $(SPIRAL_ASM_OBJ_DOS) $(DOS_ASM_OBJ) $(LDFLAGS_DOS)
+	$(CC_DOS) $(CFLAGS_DOS) -o $@ $(MAIN_SRC) $(DOS_SRC) $(SPIRAL_ASM_OBJ_DOS) $(LDFLAGS_DOS)
 	@echo "\033[1;32mDOS build complete: $(DOS_OUT)\033[0m"
 	@echo
 

@@ -2,8 +2,17 @@
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 
+extern void set_palette(void);
+extern unsigned char palette_data[768];
+
 static SDL_Window *window = NULL;
 static SDL_Surface *surface = NULL;
+
+void get_color(unsigned char color, unsigned char rgb[3]) {
+    rgb[0] = palette_data[color * 3 + 0] << 2;
+    rgb[1] = palette_data[color * 3 + 1] << 2;
+    rgb[2] = palette_data[color * 3 + 2] << 2;
+}
 
 int video_init(void) {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -31,7 +40,7 @@ int video_init(void) {
         return -1;
     }
 
-    /* Clear to black */
+    set_palette();
     SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 0));
 
     return 0;
@@ -40,15 +49,17 @@ int video_init(void) {
 void video_set_pixel(int x, int y, unsigned char color) {
     if (x >= 0 && x < REAL_SCREEN_WIDTH && y >= 0 && y < REAL_SCREEN_HEIGHT) {
         SDL_Rect rect = {x * SDL_SCALER, y * SDL_SCALER, SDL_SCALER, SDL_SCALER};
-        unsigned char palette_color = color << 2;
-        Uint32 pixel = SDL_MapRGB(surface->format, palette_color, palette_color, palette_color);
+        unsigned char rgb[3];
+        get_color(color, rgb);
+        Uint32 pixel = SDL_MapRGB(surface->format, rgb[0], rgb[1], rgb[2]);
         SDL_FillRect(surface, &rect, pixel);
     }
 }
 
 void video_clear_screen(unsigned char color) {
-    unsigned char palette_color = color << 2;
-    Uint32 pixel = SDL_MapRGB(surface->format, palette_color, palette_color, palette_color);
+    unsigned char rgb[3];
+    get_color(color, rgb);
+    Uint32 pixel = SDL_MapRGB(surface->format, rgb[0], rgb[1], rgb[2]);
     SDL_FillRect(surface, NULL, pixel);
 }
 

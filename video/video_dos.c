@@ -5,7 +5,6 @@
 #include <string.h>
 #include <pc.h>
 
-/* Mode 13h framebuffer address */
 #define VIDEO_MEMORY 0xA0000
 
 extern void set_palette(void);
