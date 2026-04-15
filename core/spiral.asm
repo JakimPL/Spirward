@@ -39,14 +39,13 @@ clear_buffers:
 
 draw_spiral:
     mov REG(si), px
-    mov REG(di), i
+    mov REG(di), f_v
     mov REG(bp), frame_count
 u_loop_start:
     mov bl, I_MIN
 
 ; for i = I_MIN to I_MAX
 u_loop:
-    pusha
     mov [I], bx
 
     fninit
@@ -161,7 +160,6 @@ v_loop_end:
     dec cx
     jnz v_loop
 v_loop_exit:
-    popa
 ; end for v
 
 u_loop_exit:
