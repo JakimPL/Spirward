@@ -18,29 +18,24 @@ else
     endif
 endif
 
-# ANSI color codes (check terminal support via TERM variable and NO_COLOR)
-ifeq ($(NO_COLOR),)
-    ifneq ($(TERM),)
-        ifneq ($(TERM),dumb)
-            COLOR_RESET   := \033[0m
-            COLOR_BOLD    := \033[1m
-            COLOR_BLUE    := \033[1;34m
-            COLOR_CYAN    := \033[1;36m
-            COLOR_MAGENTA := \033[1;35m
-            COLOR_YELLOW  := \033[1;33m
-            COLOR_GREEN   := \033[1;32m
-        endif
-    endif
+# ANSI color codes (disabled for Windows)
+ifneq ($(PLATFORM),Windows)
+    COLOR_RESET   := \033[0m
+    COLOR_BOLD    := \033[1m
+    COLOR_BLUE    := \033[1;34m
+    COLOR_CYAN    := \033[1;36m
+    COLOR_MAGENTA := \033[1;35m
+    COLOR_YELLOW  := \033[1;33m
+    COLOR_GREEN   := \033[1;32m
+else
+    COLOR_RESET   :=
+    COLOR_BOLD    :=
+    COLOR_BLUE    :=
+    COLOR_CYAN    :=
+    COLOR_MAGENTA :=
+    COLOR_YELLOW  :=
+    COLOR_GREEN   :=
 endif
-
-# Default to empty if not set above
-COLOR_RESET   ?=
-COLOR_BOLD    ?=
-COLOR_BLUE    ?=
-COLOR_CYAN    ?=
-COLOR_MAGENTA ?=
-COLOR_YELLOW  ?=
-COLOR_GREEN   ?=
 
 # Bin/build directories
 BIN_DIR = bin

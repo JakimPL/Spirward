@@ -70,11 +70,13 @@ The compiled binaries are placed in the `bin/` directory:
 bin\spirward-windows.exe
 ```
 
+**Note:** The Windows executable requires SDL2.dll to be present in the same directory or in your system PATH.
+
 **On DOS** (or DOSBox):
 
 For the COM file:
 ```cwd
-bin\spiward.com
+bin\spirward.com
 ```
 
 For the EXE file (requires 32-bit DOS extender `CWSDPMI.EXE` in the same directory):
