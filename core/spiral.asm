@@ -157,8 +157,7 @@ overlay:
 
 v_loop_end:
     popa
-    dec cx
-    jnz v_loop
+    loop v_loop
 v_loop_exit:
 ; end for v
 
