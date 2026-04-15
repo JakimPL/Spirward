@@ -2,6 +2,8 @@
 
 A tiny (256b) demo for DOS* featuring forward projection of a spiral.
 
+![Spirward Demo](images/spirward.png)
+
 ## Building
 
 ### Supported Platforms
@@ -54,7 +56,7 @@ make help
 
 The compiled binaries are placed in the `bin/` directory:
 - `spirward-linux` - Linux executable
-- `spirward-windows.exe` - Windows executable
+- `spirward-windows.exe` - Windows executable (requires SDL2 libraries)
 - `spirward.exe` - DOS executable (requires CWSDPMI.EXE)
 - `spirward.com` - 256-byte DOS COM file
 
