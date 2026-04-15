@@ -1,8 +1,6 @@
     org 100h
 
-    %include "core/data.asm"
     %include "core/consts.asm"
-    %include "core/vars.asm"
 
     section .text
 start:
@@ -42,3 +40,5 @@ check_input:
     %endif
 
     %include "core/pixel.asm"
+    %include "core/data.asm"
+    %include "core/vars.asm"

@@ -70,6 +70,9 @@ CC_WINDOWS = i686-w64-mingw32-gcc
 CC_DOS = i586-pc-msdosdjgpp-gcc
 ASM = nasm
 
+# Scripts
+SHOW_SIZES = scripts/show-sizes.sh
+
 # Check if DOS compiler is available
 DJGPP_AVAILABLE := $(shell command -v $(CC_DOS) 2>/dev/null)
 
@@ -200,7 +203,7 @@ com: $(COM_OUT)
 $(COM_OUT): $(COM_SRC) | $(BIN_DIR)
 	@echo "$(COLOR_YELLOW)==> Building COM file (DOS 256b demo)$(COLOR_RESET)"
 	$(ASM) $(ASMFLAGS_COM) $< -o $@ -l $(basename $@).lst
-	@./show-sizes.sh $(basename $@).lst
+	@$(SHOW_SIZES) $(basename $@).lst
 	@echo "$(COLOR_GREEN)COM build complete: $(COM_OUT) ($$(stat -c%s $@) bytes)$(COLOR_RESET)"
 	@echo "$(COLOR_BOLD)Listing with sizes: $(basename $@).lst$(COLOR_RESET)"
 	@echo
@@ -208,7 +211,7 @@ $(COM_OUT): $(COM_SRC) | $(BIN_DIR)
 # Show instruction sizes from listing
 .PHONY: sizes
 sizes: com
-	@./show-sizes.sh $(basename $(COM_OUT)).lst
+	@$(SHOW_SIZES) $(basename $(COM_OUT)).lst
 
 # Run platform-specific build
 .PHONY: run

@@ -66,8 +66,8 @@ calculate_uv_values:
     fist word [U]                      ; u_int ← ⌊u⌋
 
 .skip_cylindrical_effect:
-    cmp byte [FRAME_COUNT + 1], al
-    jz calculate_initial_point
+    cmp byte [FRAME_COUNT + 1], 1
+    jbe calculate_initial_point
 
 cylindrical_effect:
 .u_int:
@@ -76,7 +76,7 @@ cylindrical_effect:
 .u_combined:
     fsub st0, st1
     fld st3
-    fsin
+    fcos
     fabs
     fmulp st1, st0
     faddp st1, st0                     ; u ← u + (⌊u⌋ - u) × |sin(offset)|
