@@ -30,7 +30,7 @@ For just the 256-byte COM demo, you only need NASM.
 The project uses a Makefile with several targets:
 
 ```bash
-# Build for your current platform (auto-detected) + COM
+# Build for your current platform (auto-detected) + DOS + COM
 make
 
 # Build specific platforms
@@ -42,24 +42,20 @@ make com            # Build 256-byte COM file
 # Build everything
 make all-targets    # Cross-compile for all platforms
 
-# Build with debug symbols
-make DEBUG=1 linux
-make DEBUG=1 all-targets
-
 # Run the demo (builds and runs for current platform)
 make run
 
-# View instruction sizes from listing file
-make sizes
-
 # Clean build artifacts
 make clean
+
+# For advanced assembly options (NO_VSYNC, SCANLINE, RETURN_TO_DOS), see Makefile help:
+make help
 ```
 
 The compiled binaries are placed in the `bin/` directory:
 - `spirward-linux` - Linux executable
-- `spirward-win.exe` - Windows executable
-- `spirward.exe` - DOS executable
+- `spirward-windows.exe` - Windows executable
+- `spirward.exe` - DOS executable (requires CWSDPMI.EXE)
 - `spirward.com` - 256-byte DOS COM file
 
 ### Running the Demo
@@ -71,15 +67,26 @@ The compiled binaries are placed in the `bin/` directory:
 
 **On Windows:**
 ```bash
-bin\spirward-win.exe
+bin\spirward-windows.exe
 ```
 
 **On DOS** (or DOSBox):
-```
-spirward.com
+
+For the COM file:
+```cwd
+bin\spiward.com
 ```
 
-The COM file is the original 256-byte demo format and runs directly on DOS or in DOSBox.
+For the EXE file (requires 32-bit DOS extender `CWSDPMI.EXE` in the same directory):
+```cwd
+bin\spirward.exe
+```
+
+The COM file is the original 256-byte demo format and runs directly on DOS or in DOSBox. The EXE version is built with DJGPP and requires the CWSDPMI.EXE DOS extender to be present in the `bin/` directory.
+
+**Performance Note:** For DOS/DOSBox, the demo works best with at least 100,000 CPU cycles, preferably 400,000 or higher for smooth rendering. In DOSBox, you can adjust this with `cycles=400000` in your configuration or press `Ctrl+F12` to increase cycles at runtime.
+
+You can add `SCANLINE=1` flag to `make` to reduce the number of drawing operations (and to add a classic effect by the way).
 
 ## Math
 

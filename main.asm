@@ -35,8 +35,10 @@ check_input:
     dec ax
     jnz main_loop
 
-.return_to_dos:
-; mov ax, TEXT_MODE_3H
-; int BIOS_VIDEO_INTERRUPT
+    %ifdef RETURN_TO_DOS
+    mov ax, TEXT_MODE_3H
+    int BIOS_VIDEO_INTERRUPT
+    ret
+    %endif
 
     %include "core/pixel.asm"

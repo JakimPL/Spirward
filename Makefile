@@ -1,7 +1,12 @@
 # Cross-platform Makefile for DOS, Linux, and Windows builds
 
 # Debug mode (set DEBUG=1 to enable)
-DEBUG ?= 1
+DEBUG ?= 0
+
+# Assembly options (set NO_VSYNC=1 or SCANLINE=1 to enable)
+NO_VSYNC ?= 0
+SCANLINE ?= 0
+RETURN_TO_DOS ?= 0
 
 # Detect platform
 ifeq ($(OS),Windows_NT)
@@ -63,14 +68,26 @@ else
     ASMFLAGS_DEBUG_DOS =
 endif
 
+# Assembly option flags
+ASMFLAGS_OPTIONS =
+ifeq ($(NO_VSYNC),1)
+    ASMFLAGS_OPTIONS += -DNO_VSYNC
+endif
+ifeq ($(SCANLINE),1)
+    ASMFLAGS_OPTIONS += -DSCANLINE
+endif
+ifeq ($(RETURN_TO_DOS),1)
+    ASMFLAGS_OPTIONS += -DRETURN_TO_DOS
+endif
+
 # Platform-specific flags
 CFLAGS_LINUX = $(CFLAGS_BASE) $(CFLAGS_DEBUG) -Ispiral -Ivideo -m32
 CFLAGS_WINDOWS = $(CFLAGS_BASE) $(CFLAGS_DEBUG) -Ispiral -Ivideo -m32
 CFLAGS_DOS = $(CFLAGS_BASE) $(CFLAGS_DEBUG) -Ispiral -Ivideo
-ASMFLAGS_LINUX = -f elf32 $(ASMFLAGS_DEBUG_LINUX) -DLINUX
-ASMFLAGS_WINDOWS = -f win32 --prefix _ $(ASMFLAGS_DEBUG_WINDOWS) -DWINDOWS
-ASMFLAGS_DOS = -f coff --prefix _ $(ASMFLAGS_DEBUG_DOS) -DDOS
-ASMFLAGS_COM = -f bin -DDOS -DCOM
+ASMFLAGS_LINUX = -f elf32 $(ASMFLAGS_DEBUG_LINUX) $(ASMFLAGS_OPTIONS) -DLINUX
+ASMFLAGS_WINDOWS = -f win32 --prefix _ $(ASMFLAGS_DEBUG_WINDOWS) $(ASMFLAGS_OPTIONS) -DWINDOWS
+ASMFLAGS_DOS = -f coff --prefix _ $(ASMFLAGS_DEBUG_DOS) $(ASMFLAGS_OPTIONS) -DDOS
+ASMFLAGS_COM = -f bin $(ASMFLAGS_OPTIONS) -DDOS -DCOM
 
 # Libraries
 LDFLAGS_LINUX = -lSDL2 -lm
@@ -178,7 +195,8 @@ endif
 .PHONY: clean
 clean:
 	@echo "\033[1mCleaning build artifacts...\033[0m"
-	rm -rf $(BUILD_DIR) $(BIN_DIR) $(LST_OUT)
+	rm -rf $(BUILD_DIR)
+	rm -f $(LINUX_OUT) $(WINDOWS_OUT) $(DOS_OUT) $(COM_OUT) $(LST_OUT)
 	@echo "Cleaned build artifacts"
 	@echo
 
@@ -201,3 +219,9 @@ help:
 	@echo "  make DEBUG=1 windows    - Build Windows version with debug symbols"
 	@echo "  make DEBUG=1 all        - Build platform-specific with debug symbols"
 	@echo "  make DEBUG=1 all-targets - Build all targets with debug symbols"
+	@echo ""
+	@echo "Assembly options:"
+	@echo "  make NO_VSYNC=1 com          - Build COM file without VSync"
+	@echo "  make SCANLINE=1 linux        - Build with scanline rendering (thinner spiral)"
+	@echo "  make RETURN_TO_DOS=1 com     - Build COM with graceful exit to text mode"
+	@echo "  See Makefile for all available assembly options"
