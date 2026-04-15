@@ -95,8 +95,8 @@ For any pair of coordinates $(u, v)$, we compute a 3D point in space using:
 
 $$
 \begin{align*}
-x &= R\sin(u) + r\cos(v) \\
-y &= R\cos(u) - r\sin(v) \\
+x &= R\sin u + r\cos v \\
+y &= R\cos u - r\sin v \\
 z &= u
 \end{align*}
 $$
@@ -142,7 +142,7 @@ $$
 u = z_{\text{eye}} - \frac{f \cdot y_{\text{eye}}}{y_{\text{screen}}}
 $$
 
-By evaluating this formula for evenly-spaced screen rows ($y_{\text{screen}}$ from 1 to screen height), we get a list of $u$ values that map to those rows. These $u$ values are naturally denser where the perspective effect compresses more geometry—near the vanishing point at the top of the screen. We discarded the offset $\tfrac{H}{2}$ in our calculation, so the procedure above is a certain approximation only.
+By evaluating this formula for evenly-spaced screen rows ($y_{\text{screen}}$ from 1 to screen height), we get a list of $u$ values that map to those rows. These $u$ values are naturally denser where the perspective effect compresses more geometry—near the vanishing point at the top of the screen. We discarded the offset $\tfrac{H}{2}$ in our calculation, so the procedure above is only an approximation.
 
 This gives us **non-uniform sampling tuned to the perspective distortion**, reducing gaps in coverage (and wasted precious samples that get rendered to the same screen pixels).
 
@@ -154,7 +154,7 @@ Since we've got _UV coordinates_ at hand, it is very easy to draw textures on th
 
 #### Checkerboard Pattern
 
-Of course, the classical checkerboard pattern comes very handy:
+Of course, the classical checkerboard pattern comes in very handy:
 
 $$
 \lfloor U\rfloor \oplus \lfloor V\rfloor = \begin{cases}
@@ -163,25 +163,13 @@ $$
 \end{cases}
 $$
 
-Setting $V = \tfrac{4v}{\pi}$ lets us divide spiral circles into equal eight parts, since $v \in [0, 2\pi]$. For the sake of simplicity, we can leave $U = u$.
+Setting $V = \tfrac{4v}{\pi}$ lets us divide the spiral circles into eight equal parts, since $v \in [0, 2\pi]$. For the sake of simplicity, we can leave $U = u$.
 
 #### Lighting Model
 
 Realistic lighting often uses distance-based attenuation with formulas like $\frac{1}{1 + d^2}$ where $d$ is the distance from the camera. For our size-constrained demo, we use a simpler approximation that exploits the sampling strategy.
 
-Recall that our sample points are indexed by $i$, where the sampling step is:
-
-$$
-v_{\text{step}} = \frac{\pi}{i}
-$$
-
-and the relationship between $u$ and the sampling index is:
-
-$$
-u = v_{\text{step}} \cdot f = \frac{\pi f}{i}
-$$
-
-where $f$ is the focal length. This means $i \propto \frac{1}{u}$, so using $i$ as a proxy for lighting gives us intensity roughly proportional to $\frac{1}{u}$—a crude but effective distance-based falloff.
+We can index our sample points by $i$, where $i \propto \frac{1}{u}$, approximately. So using $i$ as a proxy for lighting gives us intensity roughly proportional to $\frac{1}{u}$—a crude but effective distance-based falloff.
 
 #### Color Computation
 
@@ -205,21 +193,21 @@ So, in summary: for each sampled $(u, v)$ pair:
 
 Calculating everything directly from the formulas is definitely not a feasible way to write a demo, even using FPU. So we keep our constants simple ($0$ if possible), and it would be best to avoid factors (other than $1$, that is).
 
-### General Parameters
-
-We take $r = 1$ and $R = 1$, keeping things simple. Our camera has $z_{\text{eye}} = 0$. We are going to adjust $y_{\text{eye}}$ to be convenient for us.
-
 ### Sampling Strategy (Once Again)
 
 First of all, we need to map all heights, from $1$ to $200$ (that's the target height dimension) to $u$'s. From our previous sampling formula, we naturally get:
 
 $$
-u_i = -\frac{f y_e}{i}
+u_i = -\frac{f y_{\text{eye}}}{i}
 $$
 
-for $i = 1, \ldots, 200$.
+for $i = 1, \ldots, 200$, and a very natural choice of $x_{\text{eye}} = z_{\text{eye}} = 0$.
 
-It turns out that letting $y_e = -2\pi$ simplifies a lot of calculations.
+It turns out that letting $y_{\text{eye}} = -2\pi$ simplifies a lot of calculations, giving:
+
+$$
+u_i = \frac{2\pi f}{i}
+$$
 
 To render the surface, since we process each $(u, v)$ pair, we can do that straightforwardly using a double nested `for` loop. We defined $u$, but we still need to determine the number of samples for each $u$.
 
@@ -237,43 +225,46 @@ Isn't that nice?
 
 Instead of recalculating the projection directly from the formula for every point, we use an incremental approach. For each $i$ (and its corresponding $u_i$), we calculate the initial projected position $(p_x, p_y)$ of the spiral's center at that height.
 
-Let's introduce $v_{\text{step}} = \frac{\pi}{i}$. Since we need to sample around a full circle ($2\pi$), using this step size we'd need $2i$ steps. However, the current definition of $v_{\text{step}}$ turns out to be very convenient for the math that follows.
+Let's introduce $v_{\text{step}} = \frac{\pi}{i}$. Since we need to sample around a full circle ($2\pi$), using this step size we'd need $2i$ steps. However, we'll increment by $2v_{\text{step}}$ in our loop, taking only $i$ steps total. This definition of $v_{\text{step}}$ turns out to be very convenient for the math that follows.
 
-Recall the spiral surface formula with $r=1$ and $R=1$:
+Recall the spiral surface formula:
 
 $$
 \begin{align*}
-x &= \sin(u) + \cos(v) \\
-y &= \cos(u) - \sin(v) \\
+x &= R \sin u + r \cos v \\
+y &= R \cos u - r \sin v \\
 z &= u
 \end{align*}
 $$
 
-We split this into the **major radius** term (the spiral's central path) and the **minor radius** term (the tube cross-section). We compute the projected center position scaled by $\tfrac{1}{v_{\text{step}}}$:
+We split this into the **major radius** term (the spiral's central path) and the **minor radius** term (the tube cross-section). We compute the projected center position for $v = 0$:
 
 $$
 \begin{align*}
-p_x &= \frac{\sin(u)}{v_{\text{step}}} = \frac{i \sin(u)}{\pi} \\
-p_y &= \frac{\cos(u)}{v_{\text{step}}} = \frac{i \cos(u)}{\pi}
+p_x &= \frac{W}{2} + \frac{f\left(R \sin u + r \cos v\right)}{u} =
+\frac{W}{2} + \frac{f(R \sin u + r)}{\frac{2\pi f}{i}} = \frac{W}{2} + \frac{R \sin u + r}{2v_{\text{step}}} \\
+p_y &= \frac{H}{2} + \frac{f\left(R \cos u - r \sin v\right)}{u} =
+\frac{H}{2} + \frac{f R \cos u}{\frac{2\pi f}{i}} = \frac{H}{2} + \frac{R \cos u}{2v_{\text{step}}}
 \end{align*}
 $$
 
-Now comes the clever part. As $v$ increases, the minor radius terms change, but instead of recomputing them from scratch, we use derivatives:
+To simplify calculations further, we discard shifts by constants like $\tfrac{r}{2v_{\text{step}}}$. You may start to wonder... where's the convenience if we use $2v_{\text{step}}$? Trigonometric functions vary from $-1$ to $1$. To increase the curvature of the spiral, we may now simply set $R = 2$ and $r = 2$, and the coefficients cancel out.
+
+As $v$ increases, the minor radius terms change, but instead of recomputing them from scratch, we use derivatives:
 
 $$
-\frac{d}{dv}[\cos(v)] = -\sin(v), \quad \frac{d}{dv}[-\sin(v)] = -\cos(v)
+\frac{d}{dv}\left[\frac{\cos v}{2 v_{\text{step}}}\right] = -\frac{\sin v}{2 v_{\text{step}}}, \quad \frac{d}{dv}\left[-\frac{\sin v}{2 v_{\text{step}}}\right] = -\frac{\cos v}{2 v_{\text{step}}}
 $$
 
-For a step of size $\Delta v = 2v_{\text{step}}$, with positions scaled by $1/v_{\text{step}}$, the incremental updates work out to:
+For a step of size $\Delta v = 2v_{\text{step}}$, the incremental update works out to be approximately $\frac{d}{dv}\Delta v$, that is:
 
 $$
 \begin{align*}
-p_x &\leftarrow p_x - \sin(v) \\
-p_y &\leftarrow p_y - \cos(v)
+p_x &\leftarrow p_x - \sin v \\
+p_y &\leftarrow p_y - \cos v
 \end{align*}
 $$
 
-And that's it. We essentialy walk around the circle incrementally.
+And that's it. We essentially walk around the circle incrementally.
 
 I think that's enough. You're probably bored to death by now.
-
