@@ -82,7 +82,7 @@ For the EXE file (requires 32-bit DOS extender `CWSDPMI.EXE` in the same directo
 bin\spirward.exe
 ```
 
-The COM file is the original 256-byte demo format and runs directly on DOS or in DOSBox. The EXE version is built with DJGPP and requires the CWSDPMI.EXE DOS extender to be present in the `bin/` directory.
+The COM file is the original 256-byte demo format and runs directly on DOS or in DOSBox. The EXE version is built with DJGPP and requires the `CWSDPMI.EXE` DOS extender to be present in the `bin/` directory.
 
 **Performance Note:** For DOS/DOSBox, the demo works best with at least 100,000 CPU cycles, preferably 400,000 or higher for smooth rendering. In DOSBox, you can adjust this with `cycles=400000` in your configuration or press `Ctrl+F12` to increase cycles at runtime.
 

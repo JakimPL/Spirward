@@ -51,6 +51,9 @@ CC_WINDOWS = i686-w64-mingw32-gcc
 CC_DOS = i586-pc-msdosdjgpp-gcc
 ASM = nasm
 
+# Check if DOS compiler is available
+DJGPP_AVAILABLE := $(shell command -v $(CC_DOS) 2>/dev/null)
+
 # Base flags
 CFLAGS_BASE = -Wall -Wextra -mno-sse -mfpmath=387 -ffast-math -fno-math-errno
 ASMFLAGS_BASE =
@@ -94,7 +97,7 @@ LDFLAGS_LINUX = -lSDL2 -lm
 LDFLAGS_WINDOWS = -lmingw32 -lSDL2main -lSDL2 -lm -mwindows
 LDFLAGS_DOS = -lm
 
-# Default target (builds for current platform + com)
+# Default target (builds for current platform + DOS + COM)
 .PHONY: all
 ifeq ($(PLATFORM),Windows)
 all: clean windows dos com
@@ -154,9 +157,16 @@ $(WINDOWS_OUT): $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_WINDOWS) | $(BIN_DIR)
 	@echo "\033[1;32mWindows build complete: $(WINDOWS_OUT)\033[0m"
 	@echo
 
-# DOS build (DJGPP)
+# DOS build (DJGPP), optional
 .PHONY: dos
-dos: $(DOS_OUT)
+dos:
+ifeq ($(DJGPP_AVAILABLE),)
+	@echo "\033[1;33mWarning: DJGPP compiler ($(CC_DOS)) not found\033[0m"
+	@echo "Skipping DOS build. Install DJGPP cross-compiler to build DOS target."
+	@echo
+else
+	@$(MAKE) $(DOS_OUT)
+endif
 
 $(DOS_OUT): $(MAIN_SRC) $(DOS_SRC) $(M32_OBJ_DOS) | $(BIN_DIR)
 	@echo "\033[1;35m==> Building for DOS (DJGPP)\033[0m"
