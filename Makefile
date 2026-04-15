@@ -18,6 +18,30 @@ else
     endif
 endif
 
+# ANSI color codes (check terminal support via TERM variable and NO_COLOR)
+ifeq ($(NO_COLOR),)
+    ifneq ($(TERM),)
+        ifneq ($(TERM),dumb)
+            COLOR_RESET   := \033[0m
+            COLOR_BOLD    := \033[1m
+            COLOR_BLUE    := \033[1;34m
+            COLOR_CYAN    := \033[1;36m
+            COLOR_MAGENTA := \033[1;35m
+            COLOR_YELLOW  := \033[1;33m
+            COLOR_GREEN   := \033[1;32m
+        endif
+    endif
+endif
+
+# Default to empty if not set above
+COLOR_RESET   ?=
+COLOR_BOLD    ?=
+COLOR_BLUE    ?=
+COLOR_CYAN    ?=
+COLOR_MAGENTA ?=
+COLOR_YELLOW  ?=
+COLOR_GREEN   ?=
+
 # Bin/build directories
 BIN_DIR = bin
 BUILD_DIR = build
@@ -126,15 +150,15 @@ $(DOS_BUILD):
 
 # Assembly object file rules
 $(M32_OBJ_LINUX): $(M32_SRC) | $(LINUX_BUILD)
-	@echo "\033[1mAssembling $(M32_SRC) for Linux...\033[0m"
+	@echo "$(COLOR_BOLD)Assembling $(M32_SRC) for Linux...$(COLOR_RESET)"
 	$(ASM) $(ASMFLAGS_LINUX) -o $@ $<
 
 $(M32_OBJ_WINDOWS): $(M32_SRC) | $(WINDOWS_BUILD)
-	@echo "\033[1mAssembling $(M32_SRC) for Windows...\033[0m"
+	@echo "$(COLOR_BOLD)Assembling $(M32_SRC) for Windows...$(COLOR_RESET)"
 	$(ASM) $(ASMFLAGS_WINDOWS) -o $@ $<
 
 $(M32_OBJ_DOS): $(M32_SRC) | $(DOS_BUILD)
-	@echo "\033[1mAssembling $(M32_SRC) for DOS...\033[0m"
+	@echo "$(COLOR_BOLD)Assembling $(M32_SRC) for DOS...$(COLOR_RESET)"
 	$(ASM) $(ASMFLAGS_DOS) -o $@ $<
 
 # Linux build (SDL2)
@@ -142,9 +166,9 @@ $(M32_OBJ_DOS): $(M32_SRC) | $(DOS_BUILD)
 linux: $(LINUX_OUT)
 
 $(LINUX_OUT): $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_LINUX) | $(BIN_DIR)
-	@echo "\033[1;34m==> Building for Linux (SDL2)\033[0m"
+	@echo "$(COLOR_BLUE)==> Building for Linux (SDL2)$(COLOR_RESET)"
 	$(CC_LINUX) $(CFLAGS_LINUX) -o $@ $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_LINUX) $(LDFLAGS_LINUX)
-	@echo "\033[1;32mLinux build complete: $(LINUX_OUT)\033[0m"
+	@echo "$(COLOR_GREEN)Linux build complete: $(LINUX_OUT)$(COLOR_RESET)"
 	@echo
 
 # Windows build (MinGW32)
@@ -152,16 +176,16 @@ $(LINUX_OUT): $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_LINUX) | $(BIN_DIR)
 windows: $(WINDOWS_OUT)
 
 $(WINDOWS_OUT): $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_WINDOWS) | $(BIN_DIR)
-	@echo "\033[1;36m==> Building for Windows (MinGW32 + SDL2)\033[0m"
+	@echo "$(COLOR_CYAN)==> Building for Windows (MinGW32 + SDL2)$(COLOR_RESET)"
 	$(CC_WINDOWS) $(CFLAGS_WINDOWS) -o $@ $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_WINDOWS) $(LDFLAGS_WINDOWS)
-	@echo "\033[1;32mWindows build complete: $(WINDOWS_OUT)\033[0m"
+	@echo "$(COLOR_GREEN)Windows build complete: $(WINDOWS_OUT)$(COLOR_RESET)"
 	@echo
 
 # DOS build (DJGPP), optional
 .PHONY: dos
 dos:
 ifeq ($(DJGPP_AVAILABLE),)
-	@echo "\033[1;33mWarning: DJGPP compiler ($(CC_DOS)) not found\033[0m"
+	@echo "$(COLOR_YELLOW)Warning: DJGPP compiler ($(CC_DOS)) not found$(COLOR_RESET)"
 	@echo "Skipping DOS build. Install DJGPP cross-compiler to build DOS target."
 	@echo
 else
@@ -169,9 +193,9 @@ else
 endif
 
 $(DOS_OUT): $(MAIN_SRC) $(DOS_SRC) $(M32_OBJ_DOS) | $(BIN_DIR)
-	@echo "\033[1;35m==> Building for DOS (DJGPP)\033[0m"
+	@echo "$(COLOR_MAGENTA)==> Building for DOS (DJGPP)$(COLOR_RESET)"
 	$(CC_DOS) $(CFLAGS_DOS) -o $@ $(MAIN_SRC) $(DOS_SRC) $(M32_OBJ_DOS) $(LDFLAGS_DOS)
-	@echo "\033[1;32mDOS build complete: $(DOS_OUT)\033[0m"
+	@echo "$(COLOR_GREEN)DOS build complete: $(DOS_OUT)$(COLOR_RESET)"
 	@echo
 
 # COM build (Assembly only)
@@ -179,11 +203,11 @@ $(DOS_OUT): $(MAIN_SRC) $(DOS_SRC) $(M32_OBJ_DOS) | $(BIN_DIR)
 com: $(COM_OUT)
 
 $(COM_OUT): $(COM_SRC) | $(BIN_DIR)
-	@echo "\033[1;33m==> Building COM file (DOS 256b demo)\033[0m"
+	@echo "$(COLOR_YELLOW)==> Building COM file (DOS 256b demo)$(COLOR_RESET)"
 	$(ASM) $(ASMFLAGS_COM) $< -o $@ -l $(basename $@).lst
 	@./show-sizes.sh $(basename $@).lst
-	@echo "\033[1;32mCOM build complete: $(COM_OUT) ($$(stat -c%s $@) bytes)\033[0m"
-	@echo "\033[1mListing with sizes: $(basename $@).lst\033[0m"
+	@echo "$(COLOR_GREEN)COM build complete: $(COM_OUT) ($$(stat -c%s $@) bytes)$(COLOR_RESET)"
+	@echo "$(COLOR_BOLD)Listing with sizes: $(basename $@).lst$(COLOR_RESET)"
 	@echo
 
 # Show instruction sizes from listing
@@ -204,7 +228,7 @@ endif
 # Clean build artifacts
 .PHONY: clean
 clean:
-	@echo "\033[1mCleaning build artifacts...\033[0m"
+	@echo "$(COLOR_BOLD)Cleaning build artifacts...$(COLOR_RESET)"
 	rm -rf $(BUILD_DIR)
 	rm -f $(LINUX_OUT) $(WINDOWS_OUT) $(DOS_OUT) $(COM_OUT) $(LST_OUT)
 	@echo "Cleaned build artifacts"
