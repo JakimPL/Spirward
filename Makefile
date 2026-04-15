@@ -13,33 +13,32 @@ else
     endif
 endif
 
-# Build directories
-BUILD_DIR = build
+# Bin/build directories
 BIN_DIR = bin
+BUILD_DIR = build
+
 LINUX_BUILD = $(BUILD_DIR)/linux
 WINDOWS_BUILD = $(BUILD_DIR)/windows
 DOS_BUILD = $(BUILD_DIR)/dos
 
 # Executables
 LINUX_OUT = $(BIN_DIR)/spirward-linux
-WINDOWS_OUT = $(BIN_DIR)/spirward-win.exe
+WINDOWS_OUT = $(BIN_DIR)/spirward-windows.exe
 DOS_OUT = $(BIN_DIR)/spirward.exe
 COM_OUT = $(BIN_DIR)/spirward.com
-LST_OUT = spirward.lst spirward-raw.lst
+LST_OUT = spirward.lst
 
 # Source files
 MAIN_SRC = main.c
 SDL_SRC = video/video_sdl.c
 DOS_SRC = video/video_dos.c
-ASM_SRC = core/m32.asm
-PALETTE_ASM_SRC = core/palette.asm
+M32_SRC = core/m32.asm
 COM_SRC = main.asm
 
 # Object files (in build subdirectories)
-SPIRAL_ASM_OBJ_LINUX = $(LINUX_BUILD)/spirward.o
-SPIRAL_ASM_OBJ_WINDOWS = $(WINDOWS_BUILD)/spirward.o
-SPIRAL_ASM_OBJ_DOS = $(DOS_BUILD)/spirward.o
-DOS_ASM_OBJ = $(DOS_BUILD)/palette.o
+M32_OBJ_LINUX = $(LINUX_BUILD)/m32.o
+M32_OBJ_WINDOWS = $(WINDOWS_BUILD)/m32.o
+M32_OBJ_DOS = $(DOS_BUILD)/m32.o
 
 # Compilers
 CC_LINUX = gcc
@@ -106,29 +105,25 @@ $(DOS_BUILD):
 	@mkdir -p $(DOS_BUILD)
 
 # Assembly object file rules
-$(SPIRAL_ASM_OBJ_LINUX): $(ASM_SRC) | $(LINUX_BUILD)
-	@echo "\033[1mAssembling $(ASM_SRC) for Linux...\033[0m"
+$(M32_OBJ_LINUX): $(M32_SRC) | $(LINUX_BUILD)
+	@echo "\033[1mAssembling $(M32_SRC) for Linux...\033[0m"
 	$(ASM) $(ASMFLAGS_LINUX) -o $@ $<
 
-$(SPIRAL_ASM_OBJ_WINDOWS): $(ASM_SRC) | $(WINDOWS_BUILD)
-	@echo "\033[1mAssembling $(ASM_SRC) for Windows...\033[0m"
+$(M32_OBJ_WINDOWS): $(M32_SRC) | $(WINDOWS_BUILD)
+	@echo "\033[1mAssembling $(M32_SRC) for Windows...\033[0m"
 	$(ASM) $(ASMFLAGS_WINDOWS) -o $@ $<
 
-$(SPIRAL_ASM_OBJ_DOS): $(ASM_SRC) | $(DOS_BUILD)
-	@echo "\033[1mAssembling $(ASM_SRC) for DOS...\033[0m"
-	$(ASM) $(ASMFLAGS_DOS) -o $@ $<
-
-$(DOS_ASM_OBJ): $(PALETTE_ASM_SRC) | $(DOS_BUILD)
-	@echo "\033[1mAssembling $(PALETTE_ASM_SRC) for DOS...\033[0m"
+$(M32_OBJ_DOS): $(M32_SRC) | $(DOS_BUILD)
+	@echo "\033[1mAssembling $(M32_SRC) for DOS...\033[0m"
 	$(ASM) $(ASMFLAGS_DOS) -o $@ $<
 
 # Linux build (SDL2)
 .PHONY: linux
 linux: $(LINUX_OUT)
 
-$(LINUX_OUT): $(MAIN_SRC) $(SDL_SRC) $(SPIRAL_ASM_OBJ_LINUX) | $(BIN_DIR)
+$(LINUX_OUT): $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_LINUX) | $(BIN_DIR)
 	@echo "\033[1;34m==> Building for Linux (SDL2)\033[0m"
-	$(CC_LINUX) $(CFLAGS_LINUX) -o $@ $(MAIN_SRC) $(SDL_SRC) $(SPIRAL_ASM_OBJ_LINUX) $(LDFLAGS_LINUX)
+	$(CC_LINUX) $(CFLAGS_LINUX) -o $@ $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_LINUX) $(LDFLAGS_LINUX)
 	@echo "\033[1;32mLinux build complete: $(LINUX_OUT)\033[0m"
 	@echo
 
@@ -136,9 +131,9 @@ $(LINUX_OUT): $(MAIN_SRC) $(SDL_SRC) $(SPIRAL_ASM_OBJ_LINUX) | $(BIN_DIR)
 .PHONY: windows
 windows: $(WINDOWS_OUT)
 
-$(WINDOWS_OUT): $(MAIN_SRC) $(SDL_SRC) $(SPIRAL_ASM_OBJ_WINDOWS) | $(BIN_DIR)
+$(WINDOWS_OUT): $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_WINDOWS) | $(BIN_DIR)
 	@echo "\033[1;36m==> Building for Windows (MinGW32 + SDL2)\033[0m"
-	$(CC_WINDOWS) $(CFLAGS_WINDOWS) -o $@ $(MAIN_SRC) $(SDL_SRC) $(SPIRAL_ASM_OBJ_WINDOWS) $(LDFLAGS_WINDOWS)
+	$(CC_WINDOWS) $(CFLAGS_WINDOWS) -o $@ $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_WINDOWS) $(LDFLAGS_WINDOWS)
 	@echo "\033[1;32mWindows build complete: $(WINDOWS_OUT)\033[0m"
 	@echo
 
@@ -146,9 +141,9 @@ $(WINDOWS_OUT): $(MAIN_SRC) $(SDL_SRC) $(SPIRAL_ASM_OBJ_WINDOWS) | $(BIN_DIR)
 .PHONY: dos
 dos: $(DOS_OUT)
 
-$(DOS_OUT): $(MAIN_SRC) $(DOS_SRC) $(SPIRAL_ASM_OBJ_DOS) | $(BIN_DIR)
+$(DOS_OUT): $(MAIN_SRC) $(DOS_SRC) $(M32_OBJ_DOS) | $(BIN_DIR)
 	@echo "\033[1;35m==> Building for DOS (DJGPP)\033[0m"
-	$(CC_DOS) $(CFLAGS_DOS) -o $@ $(MAIN_SRC) $(DOS_SRC) $(SPIRAL_ASM_OBJ_DOS) $(LDFLAGS_DOS)
+	$(CC_DOS) $(CFLAGS_DOS) -o $@ $(MAIN_SRC) $(DOS_SRC) $(M32_OBJ_DOS) $(LDFLAGS_DOS)
 	@echo "\033[1;32mDOS build complete: $(DOS_OUT)\033[0m"
 	@echo
 
