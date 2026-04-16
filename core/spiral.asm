@@ -38,11 +38,15 @@ clear_buffers:
     %endif
 
 draw_spiral:
+.setup_registers:
     mov REG(si), px
     mov REG(di), f_v
     mov REG(bp), frame_count
+
 u_loop_start:
     mov bl, I_MIN
+    mov dh, [FRAME_COUNT + 1]
+    shr dh, 1
 
 ; for i = I_MIN to I_MAX
 u_loop:
@@ -66,7 +70,7 @@ calculate_uv_values:
     fist word [U]                      ; u_int ← ⌊u⌋
 
 .skip_cylindrical_effect:
-    cmp byte [FRAME_COUNT + 1], 1
+    cmp dh, al
     jbe calculate_initial_point
 
 cylindrical_effect:
@@ -147,7 +151,7 @@ overlay:
     shr al, OVERLAY_RIGHT_SHIFT
 .multi_draw:
 .skip_overlay:
-    cmp byte [FRAME_COUNT + 1], cl
+    cmp dh, cl
     jbe v_loop_end
 
 .apply_transformation:
