@@ -62,7 +62,7 @@ calculate_uv_values:
     fidiv word [I]                     ; v_step ← π / i
 .u:
     fld st0
-    fimul word [FOCAL]                 ; u ← v_step × focal_length
+    fmul st3                           ; u ← v_step × focal_length
     fist word [U]                      ; u_int ← ⌊u⌋
 
 .skip_cylindrical_effect:

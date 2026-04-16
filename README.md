@@ -52,7 +52,7 @@ make run
 # Clean build artifacts
 make clean
 
-# For advanced assembly options (NO_VSYNC, NO_SCANLINE, RETURN_TO_DOS), see Makefile help:
+# For advanced assembly options (NO_VSYNC, SCANLINE, RETURN_TO_DOS), see Makefile help:
 make help
 ```
 
