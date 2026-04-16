@@ -14,8 +14,8 @@
     BUFFER_SIZE equ 0x10000
 
     I_MIN equ 1
-    I_MAX equ 200                      ; COLOR_MAX = 5 * ((I_MAX - I_MIN) >> 4) = 60 < MAX_COLOR
-    FOCAL_LENGTH equ 96                ; U_MIN = 96π / I_MAX - 0.5 ≈ 1.008 is almost an integer
+    I_MAX equ 200                      ; COLOR_MAX = 5 × (I_MAX >> 4) = 60 < MAX_COLOR
+    FOCAL_LENGTH equ 96                ; U_MIN = FOCAL_LENGTH × π / I_MAX - 0.5 is almost an integer
 
     OVERLAY_RIGHT_SHIFT equ 3
 

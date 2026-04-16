@@ -15,5 +15,4 @@ class HeaderPrepender:
         result.extend(header_content)
         result.append("")
         result.extend(lines)
-
         return result

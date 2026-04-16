@@ -120,6 +120,8 @@ v_loop:
     fxch
 
 update_image:
+    mov cl, I_MAX
+    sub cl, bl
 .apply_pattern:
     mov al, [V]
     xor al, [U]
@@ -138,21 +140,24 @@ update_image:
 .draw_pixel:
     call draw_pixel
 
-; overlay:
-; mov cl, I_MAX
-; sub cl, [I]
-; shr cl, 6
-; jz v_loop_end
+overlay:
+    shr cl, 6
+    jz v_loop_end
 
-; shr al, OVERLAY_RIGHT_SHIFT
-; .multi_draw:
-; shl bx, 1
-; neg bx
-; add al, MEM(REG(bx))
+    shr al, OVERLAY_RIGHT_SHIFT
+.multi_draw:
+.skip_overlay:
+    cmp byte [FRAME_COUNT + 1], cl
+    jbe v_loop_end
 
-; .draw_overlay_pixel:
-; call draw_pixel
-; loop .multi_draw
+.apply_transformation:
+    shl bx, 1
+    neg bx
+    add al, MEM(REG(bx))
+
+.draw_overlay_pixel:
+    call draw_pixel
+    loop .multi_draw
 
 v_loop_end:
     popa

@@ -14,7 +14,7 @@
 
     section .data
     global palette_data
-    palette_data: times 768 db 0       ; 256 colors * 3 RGB components
+    palette_data: times 768 db 0       ; 256 colors × 3 RGB components
     %endif
 
     section .text
