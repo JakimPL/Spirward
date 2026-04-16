@@ -4,6 +4,23 @@ repos:
     hooks:
       - id: trailing-whitespace
         types: [text]
+  - repo: https://github.com/timothycrosley/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        language_version: python3
+        args: [
+          "--profile", "black",
+          "-l", "120"
+        ]
+  - repo: https://github.com/ambv/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+        language_version: python3
+        args: [
+          "--line-length", "120"
+        ]
   - repo: local
     hooks:
       - id: nasmfmt-hook
@@ -18,7 +35,7 @@ repos:
             "-ci", "40"
           ]
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v22.1.2
+    rev: v22.1.3
     hooks:
       - id: clang-format
         args: ["-style=file"]
