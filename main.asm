@@ -1,4 +1,4 @@
-    org 100h
+    org 0x0100
 
     %include "core/consts.asm"
 

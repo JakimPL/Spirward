@@ -25,16 +25,25 @@ class OutputFormatter:
     def format(self) -> List[str]:
         formatted = []
         previous_was_label = False
+        previous_was_empty = False
 
         for line in self.lines:
             if not self.should_keep_line(line):
                 previous_was_label = False
+                previous_was_empty = False
                 continue
 
-            if self.is_empty_line(line) and previous_was_label:
+            is_empty = self.is_empty_line(line)
+
+            if is_empty and previous_was_label:
+                previous_was_empty = True
+                continue
+
+            if is_empty and previous_was_empty:
                 continue
 
             formatted.append(line)
             previous_was_label = self.is_label(line)
+            previous_was_empty = is_empty
 
         return formatted

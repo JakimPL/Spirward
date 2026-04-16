@@ -4,6 +4,7 @@ from flatten.constants import BASE_PATH, INPUT_FILE, MACROS_TO_INLINE, OUTPUT_FI
 from flatten.formatter import OutputFormatter
 from flatten.macro import MacroInliner
 from flatten.processor import AsmProcessor
+from flatten.reorganizer import AsmReorganizer
 
 
 def main() -> None:
@@ -13,7 +14,10 @@ def main() -> None:
     inliner = MacroInliner(MACROS_TO_INLINE)
     inlined = inliner.process_lines(result)
 
-    formatter = OutputFormatter(inlined)
+    reorganizer = AsmReorganizer()
+    reorganized = reorganizer.reorganize(inlined)
+
+    formatter = OutputFormatter(reorganized)
     formatted = formatter.format()
 
     OUTPUT_FILE.write_text("\n".join(formatted) + "\n")
