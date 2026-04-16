@@ -132,9 +132,9 @@ update_image:
     shr bl, 4                          ; light ← i / 16               [0...12 range]
     mul bl                             ; color = pattern × light      [0...60 range]
 .map_to_screen:
-    mov bx, [PY]
+    mov bx, [PX]                       ; rotate, looks better
     imul bx, REAL_SCREEN_WIDTH
-    add bx, [PX]
+    add bx, [PY]
     add bx, CENTER_OFFSET
 
 .draw_pixel:
