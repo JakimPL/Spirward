@@ -1,10 +1,10 @@
 # Spirward
 
-A tiny (256b) demo for DOS[^1] featuring forward projection of a spiral.
+A tiny (256b) demo for DOS* featuring forward projection of a spiral.
 
 ![Spirward Demo](images/spirward.png)
 
-[^1] And some other platforms as well.
+* And some other platforms as well.
 
 ## Building
 
