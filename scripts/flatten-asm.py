@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-from flatten.constants import BASE_PATH, INPUT_FILE, MACROS_TO_INLINE, OUTPUT_FILE
+from flatten.constants import BASE_PATH, HEADER_FILE, INPUT_FILE, MACROS_TO_INLINE, OUTPUT_FILE
 from flatten.formatter import OutputFormatter
 from flatten.macro import MacroInliner
+from flatten.prepender import HeaderPrepender
 from flatten.processor import AsmProcessor
 from flatten.reorganizer import AsmReorganizer
 
@@ -20,8 +21,11 @@ def main() -> None:
     formatter = OutputFormatter(reorganized)
     formatted = formatter.format()
 
-    OUTPUT_FILE.write_text("\n".join(formatted) + "\n")
-    print(f"Generated {OUTPUT_FILE} ({len(formatted)} lines)")
+    prepender = HeaderPrepender(HEADER_FILE)
+    final = prepender.prepend(formatted)
+
+    OUTPUT_FILE.write_text("\n".join(final) + "\n")
+    print(f"Generated {OUTPUT_FILE} ({len(final)} lines)")
 
 
 if __name__ == "__main__":
