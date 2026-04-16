@@ -18,6 +18,7 @@ class MacroDefinition:
             expanded_line = line
             for i, arg in enumerate(args, start=1):
                 expanded_line = expanded_line.replace(f"%{i}", arg)
+            
             expanded.append(expanded_line)
 
         return expanded
