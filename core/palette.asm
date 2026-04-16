@@ -1,4 +1,6 @@
+    %ifndef COM
     %include "core/consts.asm"
+    %endif
 
     %ifdef DOS
     %macro PALETTE_OUT 1
