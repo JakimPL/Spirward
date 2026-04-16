@@ -138,21 +138,21 @@ update_image:
 .draw_pixel:
     call draw_pixel
 
-overlay:
-    mov cl, I_MAX
-    sub cl, [I]
-    shr cl, 6
-    jz v_loop_end
+; overlay:
+; mov cl, I_MAX
+; sub cl, [I]
+; shr cl, 6
+; jz v_loop_end
 
-    shr al, OVERLAY_RIGHT_SHIFT
-.multi_draw:
-    shl bx, 1
-    neg bx
-    add al, MEM(REG(bx))
+; shr al, OVERLAY_RIGHT_SHIFT
+; .multi_draw:
+; shl bx, 1
+; neg bx
+; add al, MEM(REG(bx))
 
-.draw_overlay_pixel:
-    call draw_pixel
-    loop .multi_draw
+; .draw_overlay_pixel:
+; call draw_pixel
+; loop .multi_draw
 
 v_loop_end:
     popa

@@ -29,6 +29,7 @@ repos:
         language: system
         files: \.asm$
         types: [text]
+        exclude: ^core/info\.asm$
         args:
           [
             "-ii", "4",

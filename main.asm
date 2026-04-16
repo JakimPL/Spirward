@@ -1,14 +1,4 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;                                        ; 
-;   Spirward by Jakim / Stage Magician   ;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;                                        ;
-;       Visit the GitHub repository      ;
-;            for more details:           ;
-;  https://github.com/JakimPL/Spirward/  ;
-;                                        ;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    
+
     org 0x0100
 
     %include "core/consts.asm"
