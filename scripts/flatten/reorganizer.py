@@ -46,20 +46,27 @@ class AsmReorganizer:
     def categorize_line(self, line: str) -> None:
         if self.is_org_directive(line):
             self.section.org_directive = line
+        
         elif self.is_section_text(line):
             pass
+        
         elif self.is_macro_start(line):
             self.in_macro = True
             self.section.macros.append(line)
+        
         elif self.is_macro_end(line):
             self.section.macros.append(line)
             self.in_macro = False
+        
         elif self.in_macro:
             self.section.macros.append(line)
+        
         elif self.is_constant(line):
             self.section.constants.append(line)
+        
         elif self.is_define(line):
             self.section.defines.append(line)
+        
         else:
             self.section.rest.append(line)
 

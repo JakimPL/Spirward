@@ -72,6 +72,7 @@ ASM = nasm
 
 # Scripts
 SHOW_SIZES = scripts/show-sizes.sh
+FLATTEN_ASM = scripts/flatten-asm.py
 
 # Check if DOS compiler is available
 DJGPP_AVAILABLE := $(shell command -v $(CC_DOS) 2>/dev/null)
@@ -213,6 +214,13 @@ $(COM_OUT): $(COM_SRC) | $(BIN_DIR)
 sizes: com
 	@$(SHOW_SIZES) $(basename $(COM_OUT)).lst
 
+# Generate flattened assembly file
+.PHONY: code
+code:
+	@echo "$(COLOR_BOLD)Generating flattened assembly code...$(COLOR_RESET)"
+	@python3 $(FLATTEN_ASM)
+	@echo
+
 # Run platform-specific build
 .PHONY: run
 ifeq ($(PLATFORM),Windows)
@@ -240,6 +248,7 @@ help:
 	@echo "  make windows     - Build for Windows with MinGW32 and SDL2"
 	@echo "  make dos         - Cross-compile for DOS with DJGPP"
 	@echo "  make com         - Assemble standalone .com file"
+	@echo "  make code        - Generate flattened assembly code (spirward.asm)"
 	@echo "  make sizes       - Show instruction sizes from .lst file"
 	@echo "  make run         - Build and run platform-specific executable"
 	@echo "  make clean       - Remove build artifacts"
