@@ -1,12 +1,12 @@
 
     section .bss
-px:
-    resw 1
-py:
-    resw 1
 u:
     resw 1
 v:
+    resw 1
+px:
+    resw 1
+py:
     resw 1
 
 f_v:

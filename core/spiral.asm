@@ -6,10 +6,10 @@
     %define MEM(offset) [image + offset]
     %endif
 
-    %define PX (REG(si))
-    %define PY (REG(si) + 2)
-    %define U (REG(si) + 4)
-    %define V (REG(si) + 6)
+    %define U (REG(si))
+    %define V (REG(si) + 2)
+    %define PX (REG(si) + 4)
+    %define PY (REG(si) + 6)
 
     %define F_V (REG(di))
     %define I (REG(di) + 4)
@@ -39,13 +39,12 @@ clear_buffers:
 
 draw_spiral:
 .setup_registers:
-    mov REG(si), px
+    mov REG(si), u
     mov REG(di), f_v
     mov REG(bp), frame_count
-
 u_loop_start:
     mov bl, I_MIN
-    mov dh, [FRAME_COUNT + 1]
+    mov dh, byte [FRAME_COUNT + 1]
     shr dh, 1
 
 ; for i = I_MIN to I_MAX
@@ -90,10 +89,10 @@ calculate_initial_point:
 .u_sincos:
     fsincos
 .py:
-    fdiv st2                           ; px ← sin u / v_step
+    fdiv st2                           ; py ← cos u / v_step
 .px:
     fxch
-    fdiv st2                           ; py ← cos u / v_step
+    fdiv st2                           ; px ← sin u / v_step
 
 ; for v = 0 to i - 1
 v_loop_start:
@@ -124,6 +123,7 @@ v_loop:
     fxch
 
 update_image:
+.prepare_overlay:
     mov cl, I_MAX
     sub cl, bl
 .apply_pattern:
@@ -146,10 +146,8 @@ update_image:
 
 overlay:
     shr cl, 6
-    jz v_loop_end
-
     shr al, OVERLAY_RIGHT_SHIFT
-.multi_draw:
+.overlay_loop:
 .skip_overlay:
     cmp dh, cl
     jbe v_loop_end
@@ -161,7 +159,7 @@ overlay:
 
 .draw_overlay_pixel:
     call draw_pixel
-    loop .multi_draw
+    loop .overlay_loop
 
 v_loop_end:
     popa
@@ -173,8 +171,8 @@ u_loop_exit:
     inc bx
     cmp bl, [FRAME_COUNT]              ; bl > frame_count
     ja draw_exit
-    cmp bl, I_MAX + 1
-    jb u_loop
+    cmp bl, I_MAX
+    jbe u_loop
 ; end for u
 
 draw_exit:
