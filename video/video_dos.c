@@ -26,14 +26,14 @@ int video_init(void) {
     }
 
     vga_memory = (unsigned char *) (VIDEO_MEMORY + __djgpp_conventional_base);
-    memset(vga_memory, 0, REAL_SCREEN_WIDTH * REAL_SCREEN_HEIGHT);
+    memset(vga_memory, 0, SCREEN_WIDTH * SCREEN_HEIGHT);
 
     return 0;
 }
 
 void video_set_pixel(int x, int y, unsigned char color) {
-    if (x >= 0 && x < REAL_SCREEN_WIDTH && y >= 0 && y < REAL_SCREEN_HEIGHT) {
-        vga_memory[y * REAL_SCREEN_WIDTH + x] = color;
+    if (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT) {
+        vga_memory[y * SCREEN_WIDTH + x] = color;
     }
 }
 

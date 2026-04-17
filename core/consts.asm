@@ -5,16 +5,16 @@
     global half_spiral_screen_width
     global half_spiral_screen_height
 
-    REAL_SCREEN_WIDTH equ 320
-    REAL_SCREEN_HEIGHT equ 200
-    VIDEO_BUFFER_SIZE equ REAL_SCREEN_WIDTH * REAL_SCREEN_HEIGHT
+    SCREEN_WIDTH equ 320
+    SCREEN_HEIGHT equ 200
+    VIDEO_BUFFER_SIZE equ SCREEN_WIDTH * SCREEN_HEIGHT
 
     MAX_COLOR equ 0x3F
     CENTER_OFFSET equ 0x7DA0
     BUFFER_SIZE equ 0x10000
 
     I_MIN equ 1
-    I_MAX equ 200                      ; COLOR_MAX = 5 × (I_MAX >> 4) = 60 < MAX_COLOR
+    I_MAX equ 200                      ; COLOR_MAX = 5 × (I_MAX >> 4) < MAX_COLOR
     FOCAL_LENGTH equ 96                ; U_MIN = FOCAL_LENGTH × π / I_MAX - 0.5 is almost an integer
 
     OVERLAY_RIGHT_SHIFT equ 3

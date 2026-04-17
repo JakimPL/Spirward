@@ -1,8 +1,6 @@
 #ifndef SPIRAL_H
 #define SPIRAL_H
 
-#define SCREEN_WIDTH 160
-#define SCREEN_HEIGHT 100
 #define BUFFER_SIZE 65536
 
 extern short color;

@@ -6,6 +6,6 @@ draw_pixel:
     mov ah, al
     mov MEM(REG(bx)), ax               ; write two pixels for a thicker spiral
     %ifndef SCANLINE
-    mov MEM(REG(bx) + REAL_SCREEN_WIDTH), ax
+    mov MEM(REG(bx) + SCREEN_WIDTH), ax
     %endif
     ret

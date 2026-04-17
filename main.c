@@ -8,11 +8,11 @@
 #endif
 
 void render() {
-    for (int y = 0; y < REAL_SCREEN_HEIGHT; y++) {
-        for (int x = 0; x < REAL_SCREEN_WIDTH; x++) {
-            unsigned short array_index = y * REAL_SCREEN_WIDTH + x;
+    for (int y = 0; y < SCREEN_HEIGHT; y++) {
+        for (int x = 0; x < SCREEN_WIDTH; x++) {
+            unsigned short array_index = y * SCREEN_WIDTH + x;
             unsigned char color = image[array_index];
-            if (x >= 0 && x < REAL_SCREEN_WIDTH && y >= 0 && y < REAL_SCREEN_HEIGHT) {
+            if (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT) {
                 video_set_pixel(x, y, color);
             }
         }

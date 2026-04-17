@@ -1,8 +1,8 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
-#define REAL_SCREEN_WIDTH 320
-#define REAL_SCREEN_HEIGHT 200
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 200
 
 #define SDL_SCALER 4
 

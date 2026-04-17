@@ -137,7 +137,7 @@ update_image:
     mul bl                             ; color = pattern × light      [0...60 range]
 .map_to_screen:
     mov bx, [PX]                       ; rotate, looks better
-    imul bx, REAL_SCREEN_WIDTH
+    imul bx, SCREEN_WIDTH
     add bx, [PY]
     add bx, CENTER_OFFSET
 
