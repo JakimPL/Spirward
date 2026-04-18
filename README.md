@@ -79,6 +79,8 @@ bin\spirward-windows.exe
 
 **Note:** The Windows executable requires SDL2.dll to be present in the same directory or in your system PATH.
 
+You can toggle the fullscreen by pressing `F11` or `F`.
+
 **On DOS** (or DOSBox):
 
 For the COM file:

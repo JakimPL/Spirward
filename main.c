@@ -35,16 +35,8 @@ void handle_fullscreen_toggle_key(SDL_Keycode key) {
     }
 }
 
-void handle_window_maximize_event() {
-    if (!video_is_fullscreen()) {
-        video_toggle_fullscreen();
-    }
-}
-
 void handle_window_event(SDL_WindowEvent *window_event) {
-    if (window_event->event == SDL_WINDOWEVENT_MAXIMIZED) {
-        handle_window_maximize_event();
-    } else if (window_event->event == SDL_WINDOWEVENT_SIZE_CHANGED || window_event->event == SDL_WINDOWEVENT_EXPOSED) {
+    if (window_event->event == SDL_WINDOWEVENT_SIZE_CHANGED || window_event->event == SDL_WINDOWEVENT_EXPOSED) {
         redraw_current_frame();
     }
 }
