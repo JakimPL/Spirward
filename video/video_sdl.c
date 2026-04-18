@@ -109,6 +109,20 @@ void video_handle_resize(void) {
     SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 }
 
+void video_toggle_fullscreen(void) {
+    Uint32 flags = SDL_GetWindowFlags(window);
+    if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        SDL_SetWindowFullscreen(window, 0);
+    } else {
+        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    }
+}
+
+int video_is_fullscreen(void) {
+    Uint32 flags = SDL_GetWindowFlags(window);
+    return (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0;
+}
+
 void video_cleanup(void) {
     if (pixels) {
         free(pixels);

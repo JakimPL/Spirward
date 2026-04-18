@@ -12,6 +12,8 @@ void video_clear_screen(unsigned char color);
 void video_update_from_buffer(unsigned char *buffer);
 void video_present(void);
 void video_handle_resize(void);
+void video_toggle_fullscreen(void);
+int video_is_fullscreen(void);
 void video_cleanup(void);
 
 #endif
