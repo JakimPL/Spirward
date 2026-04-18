@@ -10,11 +10,11 @@
     VIDEO_BUFFER_SIZE equ SCREEN_WIDTH * SCREEN_HEIGHT
 
     MAX_COLOR equ 0x3F
-    CENTER_OFFSET equ 0x82A0           ; shifted down to avoid overflow
+    CENTER_OFFSET equ 0x83E0           ; shifted down to avoid overflow
     BUFFER_SIZE equ 0x10000
 
     I_MIN equ 1
-    I_MAX equ 192                      ; COLOR_MAX = 5 × (I_MAX >> 4) < MAX_COLOR
+    I_MAX equ 196                      ; COLOR_MAX = 5 × (I_MAX >> 4) < MAX_COLOR
     FOCAL_LENGTH equ 96                ; U_MIN = FOCAL_LENGTH × π / I_MAX - 0.5 is almost an integer
 
     OVERLAY_RIGHT_SHIFT equ 3
