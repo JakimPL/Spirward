@@ -35,10 +35,6 @@ void handle_fullscreen_toggle_key(SDL_Keycode key) {
     }
 }
 
-void handle_window_resize_event() {
-    redraw_current_frame();
-}
-
 void handle_window_maximize_event() {
     if (!video_is_fullscreen()) {
         video_toggle_fullscreen();
@@ -46,11 +42,10 @@ void handle_window_maximize_event() {
 }
 
 void handle_window_event(SDL_WindowEvent *window_event) {
-    if (window_event->event == SDL_WINDOWEVENT_SIZE_CHANGED ||
-        window_event->event == SDL_WINDOWEVENT_EXPOSED) {
-        handle_window_resize_event();
-    } else if (window_event->event == SDL_WINDOWEVENT_MAXIMIZED) {
+    if (window_event->event == SDL_WINDOWEVENT_MAXIMIZED) {
         handle_window_maximize_event();
+    } else if (window_event->event == SDL_WINDOWEVENT_SIZE_CHANGED || window_event->event == SDL_WINDOWEVENT_EXPOSED) {
+        redraw_current_frame();
     }
 }
 
@@ -61,8 +56,9 @@ int process_event(SDL_Event *event) {
     if (event->type == SDL_KEYDOWN) {
         if (event->key.keysym.sym == SDLK_ESCAPE) {
             return handle_escape_key();
+        } else {
+            handle_fullscreen_toggle_key(event->key.keysym.sym);
         }
-        handle_fullscreen_toggle_key(event->key.keysym.sym);
     }
     if (event->type == SDL_WINDOWEVENT) {
         handle_window_event(&event->window);

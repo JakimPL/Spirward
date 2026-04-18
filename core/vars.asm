@@ -15,8 +15,6 @@ i:
     resd 1
 
     %ifndef COM
-array_index:
-    resw 1
 image:
     resb BUFFER_SIZE
     %endif

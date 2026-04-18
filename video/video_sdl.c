@@ -23,6 +23,7 @@ int video_init(void) {
     }
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
     window = SDL_CreateWindow(
         "Spirward",

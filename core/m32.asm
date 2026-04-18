@@ -1,5 +1,4 @@
     global draw
-    global array_index
     global color
     global image
 

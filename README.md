@@ -13,7 +13,7 @@ A tiny (256b) demo for DOS¹ featuring forward projection of a spiral.
 This demo supports multiple build targets:
 
 - **Linux** - Native build with SDL2 for visualization and testing
-- **Windows** - Cross-compiled with MinGW32 and SDL2
+- **Windows** - Cross-compiled with MinGW32 and SDL2 (OpenGL)
 - **DOS (EXE)** - Cross-compiled with DJGPP for DOS systems
 - **DOS (COM)** - Pure assembly 256-byte demo, the original target format
 
@@ -22,7 +22,7 @@ This demo supports multiple build targets:
 To build all targets, you'll need:
 
 - **NASM** assembler (for all builds)
-- **GCC** (for Linux builds)
+- **GCC** for Linux builds
 - **MinGW32 cross-compiler** (`i686-w64-mingw32-gcc`) for Windows builds
 - **DJGPP cross-compiler** (`i586-pc-msdosdjgpp-gcc`) for DOS builds
 - **SDL2** development libraries (for Linux and Windows builds)
@@ -45,6 +45,9 @@ make com            # Build 256-byte COM file
 
 # Build everything
 make all-targets    # Cross-compile for all platforms
+
+# Make a final .asm file
+make code           # Flatten ASM source file
 
 # Run the demo (builds and runs for current platform)
 make run

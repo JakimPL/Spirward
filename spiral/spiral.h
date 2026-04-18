@@ -4,7 +4,6 @@
 #define BUFFER_SIZE 65536
 
 extern short color;
-extern unsigned short array_index;
 extern unsigned char image[BUFFER_SIZE];
 
 extern void draw();
