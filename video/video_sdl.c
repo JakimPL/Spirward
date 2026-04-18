@@ -70,25 +70,8 @@ int video_init(void) {
     return 0;
 }
 
-void video_set_pixel(int x, int y, unsigned char color) {
-    if (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT) {
-        unsigned char rgb[3];
-        get_color(color, rgb);
-        pixels[y * SCREEN_WIDTH + x] = 0xFF000000 | (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
-    }
-}
-
-void video_clear_screen(unsigned char color) {
-    unsigned char rgb[3];
-    get_color(color, rgb);
-    Uint32 pixel = 0xFF000000 | (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
-    for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
-        pixels[i] = pixel;
-    }
-}
-
 void video_update_from_buffer(unsigned char *buffer) {
-    for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
+    for (unsigned int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
         unsigned char rgb[3];
         get_color(buffer[i], rgb);
         pixels[i] = 0xFF000000 | (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
@@ -110,8 +93,7 @@ void video_handle_resize(void) {
 }
 
 void video_toggle_fullscreen(void) {
-    Uint32 flags = SDL_GetWindowFlags(window);
-    if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+    if (video_is_fullscreen()) {
         SDL_SetWindowFullscreen(window, 0);
     } else {
         SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
