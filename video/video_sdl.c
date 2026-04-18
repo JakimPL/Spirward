@@ -1,12 +1,15 @@
 #include "video.h"
 #include <SDL2/SDL.h>
 #include <stdlib.h>
+#include <string.h>
 
 extern void set_palette(void);
 extern unsigned char palette_data[768];
 
 static SDL_Window *window = NULL;
-static SDL_Surface *surface = NULL;
+static SDL_Renderer *renderer = NULL;
+static SDL_Texture *texture = NULL;
+static Uint32 *pixels = NULL;
 
 void get_color(unsigned char color, unsigned char rgb[3]) {
     rgb[0] = palette_data[color * 3 + 0] << 2;
@@ -19,13 +22,15 @@ int video_init(void) {
         return -1;
     }
 
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+
     window = SDL_CreateWindow(
-        "Spiral Renderer",
+        "Spirward",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         SCREEN_WIDTH * SDL_SCALER,
         SCREEN_HEIGHT * SDL_SCALER,
-        SDL_WINDOW_SHOWN
+        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
     );
 
     if (!window) {
@@ -33,41 +38,87 @@ int video_init(void) {
         return -1;
     }
 
-    surface = SDL_GetWindowSurface(window);
-    if (!surface) {
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (!renderer) {
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return -1;
+    }
+
+    SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
+    if (!texture) {
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return -1;
+    }
+
+    pixels = (Uint32 *) malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(Uint32));
+    if (!pixels) {
+        SDL_DestroyTexture(texture);
+        SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
         return -1;
     }
 
     set_palette();
-    SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 0));
+    memset(pixels, 0, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(Uint32));
 
     return 0;
 }
 
 void video_set_pixel(int x, int y, unsigned char color) {
     if (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT) {
-        SDL_Rect rect = {x * SDL_SCALER, y * SDL_SCALER, SDL_SCALER, SDL_SCALER};
         unsigned char rgb[3];
         get_color(color, rgb);
-        Uint32 pixel = SDL_MapRGB(surface->format, rgb[0], rgb[1], rgb[2]);
-        SDL_FillRect(surface, &rect, pixel);
+        pixels[y * SCREEN_WIDTH + x] = 0xFF000000 | (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
     }
 }
 
 void video_clear_screen(unsigned char color) {
     unsigned char rgb[3];
     get_color(color, rgb);
-    Uint32 pixel = SDL_MapRGB(surface->format, rgb[0], rgb[1], rgb[2]);
-    SDL_FillRect(surface, NULL, pixel);
+    Uint32 pixel = 0xFF000000 | (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+    for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
+        pixels[i] = pixel;
+    }
+}
+
+void video_update_from_buffer(unsigned char *buffer) {
+    for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
+        unsigned char rgb[3];
+        get_color(buffer[i], rgb);
+        pixels[i] = 0xFF000000 | (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+    }
 }
 
 void video_present(void) {
-    SDL_UpdateWindowSurface(window);
+    unsigned char rgb[3];
+    SDL_UpdateTexture(texture, NULL, pixels, SCREEN_WIDTH * sizeof(Uint32));
+    get_color(0, rgb);
+    SDL_SetRenderDrawColor(renderer, rgb[0], rgb[1], rgb[2], 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    SDL_RenderPresent(renderer);
+}
+
+void video_handle_resize(void) {
+    SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 }
 
 void video_cleanup(void) {
+    if (pixels) {
+        free(pixels);
+    }
+    if (texture) {
+        SDL_DestroyTexture(texture);
+    }
+    if (renderer) {
+        SDL_DestroyRenderer(renderer);
+    }
     if (window) {
         SDL_DestroyWindow(window);
     }

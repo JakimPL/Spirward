@@ -21,7 +21,7 @@ void render() {
 
 void frame() {
     draw();
-    render();
+    video_update_from_buffer(image);
     video_present();
 }
 
@@ -43,6 +43,15 @@ int main(int, char **) {
             if (event.type == SDL_QUIT ||
                 (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
                 running = 0;
+            }
+            // Force redraw on window resize
+            if (event.type == SDL_WINDOWEVENT) {
+                if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED ||
+                    event.window.event == SDL_WINDOWEVENT_EXPOSED) {
+                    video_handle_resize();
+                    video_update_from_buffer(image);
+                    video_present();
+                }
             }
         }
 
