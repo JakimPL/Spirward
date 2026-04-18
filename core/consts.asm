@@ -10,7 +10,7 @@
     VIDEO_BUFFER_SIZE equ SCREEN_WIDTH * SCREEN_HEIGHT
 
     MAX_COLOR equ 0x3F
-    CENTER_OFFSET equ 0x7DA0           ; shifted down to avoid overflow
+    CENTER_OFFSET equ 0x7DA0
     BUFFER_SIZE equ 0x10000
 
     I_MIN equ 1
