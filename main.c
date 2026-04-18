@@ -3,21 +3,10 @@
 
 #ifdef __DJGPP__
 #include <conio.h>
+#include <time.h>
 #else
 #include <SDL2/SDL.h>
 #endif
-
-void render() {
-    for (int y = 0; y < SCREEN_HEIGHT; y++) {
-        for (int x = 0; x < SCREEN_WIDTH; x++) {
-            unsigned short array_index = y * SCREEN_WIDTH + x;
-            unsigned char color = image[array_index];
-            if (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT) {
-                video_set_pixel(x, y, color);
-            }
-        }
-    }
-}
 
 void frame() {
     draw();
@@ -88,8 +77,19 @@ int main(int, char **) {
     }
 
 #ifdef __DJGPP__
+    uclock_t frame_start, frame_time;
+    const uclock_t frame_delay = UCLOCKS_PER_SEC / 60;
+
     while (!kbhit()) {
+        frame_start = uclock();
         frame();
+        frame_time = uclock() - frame_start;
+        if (frame_time < frame_delay) {
+            uclock_t delay_end = uclock() + (frame_delay - frame_time);
+            while (uclock() < delay_end && !kbhit()) {
+                /* busy wait */
+            }
+        }
     }
     getch();
 #else

@@ -20,7 +20,6 @@ int video_init(void) {
     set_graphics_mode(0x0013);
     set_palette();
 
-    /* Enable near pointers for direct VGA access */
     if (__djgpp_nearptr_enable() == 0) {
         return -1;
     }
@@ -37,7 +36,25 @@ void video_set_pixel(int x, int y, unsigned char color) {
     }
 }
 
+void video_clear_screen(unsigned char color) {
+    memset(vga_memory, color, SCREEN_WIDTH * SCREEN_HEIGHT);
+}
+
+void video_update_from_buffer(unsigned char *buffer) {
+    memcpy(vga_memory, buffer, SCREEN_WIDTH * SCREEN_HEIGHT);
+}
+
 void video_present(void) {
+}
+
+void video_handle_resize(void) {
+}
+
+void video_toggle_fullscreen(void) {
+}
+
+int video_is_fullscreen(void) {
+    return 1;
 }
 
 void video_cleanup(void) {
