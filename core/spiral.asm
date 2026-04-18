@@ -85,7 +85,7 @@ cylindrical_effect:
     faddp st1, st0                     ; u ← u + (⌊u⌋ - u) × |sin(offset)|
 
 calculate_initial_point:
-    fadd st0, st2                      ; u ← u + offset
+    fsubr st0, st2                     ; u ← offset - u (additional reflection)
 .u_sincos:
     fsincos
 .py:

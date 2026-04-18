@@ -3,7 +3,7 @@
 
     section .data
 frame_count:
-    dw 1
+    dw 0
 focal_length:
     dw FOCAL_LENGTH
     %endif
