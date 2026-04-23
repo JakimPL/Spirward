@@ -40,6 +40,9 @@ endif
 # Bin/build directories
 BIN_DIR = bin
 BUILD_DIR = build
+FRAMEWORK_DIR = framework
+VIDEO_DIR = $(FRAMEWORK_DIR)/video
+RUNTIME_DIR = $(FRAMEWORK_DIR)/runtime
 
 LINUX_BUILD = $(BUILD_DIR)/linux
 WINDOWS_BUILD = $(BUILD_DIR)/windows
@@ -54,8 +57,9 @@ LST_OUT = spirward.lst
 
 # Source files
 MAIN_SRC = main.c
-SDL_SRC = video/video_sdl.c
-DOS_SRC = video/video_dos.c
+RUNTIME_SRC = $(RUNTIME_DIR)/runtime.c
+SDL_SRC = $(VIDEO_DIR)/video_sdl.c
+DOS_SRC = $(VIDEO_DIR)/video_dos.c
 M32_SRC = core/m32.asm
 COM_SRC = main.asm
 
@@ -107,9 +111,9 @@ ifeq ($(RETURN_TO_DOS),1)
 endif
 
 # Platform-specific flags
-CFLAGS_LINUX = $(CFLAGS_BASE) $(CFLAGS_DEBUG) -Ispiral -Ivideo -m32
-CFLAGS_WINDOWS = $(CFLAGS_BASE) $(CFLAGS_DEBUG) -Ispiral -Ivideo -m32
-CFLAGS_DOS = $(CFLAGS_BASE) $(CFLAGS_DEBUG) -Ispiral -Ivideo
+CFLAGS_LINUX = $(CFLAGS_BASE) $(CFLAGS_DEBUG) -Ispiral -I$(VIDEO_DIR) -I$(RUNTIME_DIR) -m32
+CFLAGS_WINDOWS = $(CFLAGS_BASE) $(CFLAGS_DEBUG) -Ispiral -I$(VIDEO_DIR) -I$(RUNTIME_DIR) -m32
+CFLAGS_DOS = $(CFLAGS_BASE) $(CFLAGS_DEBUG) -Ispiral -I$(VIDEO_DIR) -I$(RUNTIME_DIR)
 ASMFLAGS_LINUX = -f elf32 $(ASMFLAGS_DEBUG_LINUX) $(ASMFLAGS_OPTIONS) -DLINUX
 ASMFLAGS_WINDOWS = -f win32 --prefix _ $(ASMFLAGS_DEBUG_WINDOWS) $(ASMFLAGS_OPTIONS) -DWINDOWS
 ASMFLAGS_DOS = -f coff --prefix _ $(ASMFLAGS_DEBUG_DOS) $(ASMFLAGS_OPTIONS) -DDOS
@@ -164,9 +168,9 @@ $(M32_OBJ_DOS): $(M32_SRC) | $(DOS_BUILD)
 .PHONY: linux
 linux: $(LINUX_OUT)
 
-$(LINUX_OUT): $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_LINUX) | $(BIN_DIR)
+$(LINUX_OUT): $(MAIN_SRC) $(RUNTIME_SRC) $(SDL_SRC) $(M32_OBJ_LINUX) | $(BIN_DIR)
 	@echo "$(COLOR_BLUE)==> Building for Linux (SDL2)$(COLOR_RESET)"
-	$(CC_LINUX) $(CFLAGS_LINUX) -o $@ $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_LINUX) $(LDFLAGS_LINUX)
+	$(CC_LINUX) $(CFLAGS_LINUX) -o $@ $(MAIN_SRC) $(RUNTIME_SRC) $(SDL_SRC) $(M32_OBJ_LINUX) $(LDFLAGS_LINUX)
 	@echo "$(COLOR_GREEN)Linux build complete: $(LINUX_OUT)$(COLOR_RESET)"
 	@echo
 
@@ -174,9 +178,9 @@ $(LINUX_OUT): $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_LINUX) | $(BIN_DIR)
 .PHONY: windows
 windows: $(WINDOWS_OUT)
 
-$(WINDOWS_OUT): $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_WINDOWS) | $(BIN_DIR)
+$(WINDOWS_OUT): $(MAIN_SRC) $(RUNTIME_SRC) $(SDL_SRC) $(M32_OBJ_WINDOWS) | $(BIN_DIR)
 	@echo "$(COLOR_CYAN)==> Building for Windows (MinGW32 + SDL2)$(COLOR_RESET)"
-	$(CC_WINDOWS) $(CFLAGS_WINDOWS) -o $@ $(MAIN_SRC) $(SDL_SRC) $(M32_OBJ_WINDOWS) $(LDFLAGS_WINDOWS)
+	$(CC_WINDOWS) $(CFLAGS_WINDOWS) -o $@ $(MAIN_SRC) $(RUNTIME_SRC) $(SDL_SRC) $(M32_OBJ_WINDOWS) $(LDFLAGS_WINDOWS)
 	@echo "$(COLOR_GREEN)Windows build complete: $(WINDOWS_OUT)$(COLOR_RESET)"
 	@echo
 
@@ -191,9 +195,9 @@ else
 	@$(MAKE) $(DOS_OUT)
 endif
 
-$(DOS_OUT): $(MAIN_SRC) $(DOS_SRC) $(M32_OBJ_DOS) | $(BIN_DIR)
+$(DOS_OUT): $(MAIN_SRC) $(RUNTIME_SRC) $(DOS_SRC) $(M32_OBJ_DOS) | $(BIN_DIR)
 	@echo "$(COLOR_MAGENTA)==> Building for DOS (DJGPP)$(COLOR_RESET)"
-	$(CC_DOS) $(CFLAGS_DOS) -o $@ $(MAIN_SRC) $(DOS_SRC) $(M32_OBJ_DOS) $(LDFLAGS_DOS)
+	$(CC_DOS) $(CFLAGS_DOS) -o $@ $(MAIN_SRC) $(RUNTIME_SRC) $(DOS_SRC) $(M32_OBJ_DOS) $(LDFLAGS_DOS)
 	@echo "$(COLOR_GREEN)DOS build complete: $(DOS_OUT)$(COLOR_RESET)"
 	@echo
 

@@ -1,7 +1,7 @@
-#include "video.h"
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 #include <string.h>
+#include "video.h"
 
 extern void set_palette(void);
 extern unsigned char palette_data[768];
