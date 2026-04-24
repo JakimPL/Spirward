@@ -1,3 +1,6 @@
+%ifndef CORE_PALETTE_ASM
+%define CORE_PALETTE_ASM
+
 palette_loop:
     mov al, bl
     PALETTE_OUT 0                      ; R
@@ -10,3 +13,5 @@ palette_loop:
     PALETTE_OUT 2                      ; B
     inc bx
     loop palette_loop
+
+%endif

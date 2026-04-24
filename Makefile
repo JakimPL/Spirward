@@ -2,11 +2,11 @@
 
 # Project configuration
 PROJECT_NAME = spirward
-TINYWORK_DIR = framework
+TINYWORK_DIR = tinywork
 
 # Source files
-MAIN_SRC = # using default: framework/main.c
-COM_SRC = # using default: framework/main.asm
+MAIN_SRC = # using default: tinywork/main.c
+COM_SRC = # using default: tinywork/main.asm
 
 # General options
 DEBUG ?= 0
