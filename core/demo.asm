@@ -182,8 +182,5 @@ draw_exit:
     popa
     ret
 
-    %include "core/data.asm"
-    %include "core/consts.asm"
-    %include "core/vars.asm"
-    %include "core/pixel.asm"
+    %include "core/includes.asm"
     %endif

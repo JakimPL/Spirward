@@ -1,3 +1,6 @@
+    %ifndef CORE_PIXEL_ASM
+    %define CORE_PIXEL_ASM
+
     section .text
 draw_pixel:
     %ifndef COM
@@ -9,3 +12,5 @@ draw_pixel:
     mov MEM(REG(bx) + SCREEN_WIDTH), ax
     %endif
     ret
+
+    %endif

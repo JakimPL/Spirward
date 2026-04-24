@@ -5,11 +5,9 @@ PROJECT_NAME = spirward
 FRAMEWORK_DIR = framework
 
 # Source files
-MAIN_SRC = # framework default
+MAIN_SRC = # using default: framework/main.c
+COM_SRC = # using default: framework/main.asm
 M32_SRC = core/m32.asm
-COM_SRC = main.asm
-
-EXTRA_INCLUDES = -Ispiral
 
 # General options
 DEBUG ?= 0
