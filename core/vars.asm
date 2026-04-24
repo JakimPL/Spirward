@@ -16,9 +16,4 @@ f_v:
 i:
     resd 1
 
-    %ifndef COM
-image:
-    resb BUFFER_SIZE
-    %endif
-
     %endif

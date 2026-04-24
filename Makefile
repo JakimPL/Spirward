@@ -7,7 +7,6 @@ FRAMEWORK_DIR = framework
 # Source files
 MAIN_SRC = # using default: framework/main.c
 COM_SRC = # using default: framework/main.asm
-M32_SRC = core/m32.asm
 
 # General options
 DEBUG ?= 0
