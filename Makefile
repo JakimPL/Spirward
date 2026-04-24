@@ -2,7 +2,7 @@
 
 # Project configuration
 PROJECT_NAME = spirward
-FRAMEWORK_DIR = framework
+TINYWORK_DIR = framework
 
 # Source files
 MAIN_SRC = # using default: framework/main.c
@@ -27,4 +27,4 @@ ifeq ($(RETURN_TO_DOS),1)
     ASMFLAGS_OPTIONS += -DRETURN_TO_DOS
 endif
 
-include $(FRAMEWORK_DIR)/Makefile.inc
+include $(TINYWORK_DIR)/Makefile.inc
