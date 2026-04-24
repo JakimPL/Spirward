@@ -18,7 +18,7 @@
     %define FOCAL (REG(bp) + 2)
 
     section .text
-draw:
+frame:
     %ifndef COM
     pusha
     %endif
