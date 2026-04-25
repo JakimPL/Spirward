@@ -1,5 +1,5 @@
-    %ifndef CORE_DATA_ASM
-    %define CORE_DATA_ASM
+    %ifndef CORE_DATA
+    %define CORE_DATA
 
     section .data
 frame_count:

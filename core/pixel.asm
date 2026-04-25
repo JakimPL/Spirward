@@ -1,5 +1,5 @@
-    %ifndef CORE_PIXEL_ASM
-    %define CORE_PIXEL_ASM
+    %ifndef CORE_PIXEL
+    %define CORE_PIXEL
 
     section .text
 draw_pixel:

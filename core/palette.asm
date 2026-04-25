@@ -1,5 +1,5 @@
-    %ifndef CORE_PALETTE_ASM
-    %define CORE_PALETTE_ASM
+    %ifndef CORE_PALETTE
+    %define CORE_PALETTE
 
 palette:
     %ifdef DOS

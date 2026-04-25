@@ -1,5 +1,5 @@
-    %ifndef CORE_VARS_ASM
-    %define CORE_VARS_ASM
+    %ifndef CORE_VARS
+    %define CORE_VARS
 
     section .bss
 u:
