@@ -1,7 +1,16 @@
     %ifndef CORE_PALETTE_ASM
     %define CORE_PALETTE_ASM
 
-palette_loop:
+palette:
+    %ifdef DOS
+    mov dx, PALETTE_DATA_PORT
+    mov cl, 0xFF
+    %else
+    mov edi, palette_data
+    mov ecx, 0x100
+    %endif
+
+.palette_loop:
     mov al, bl
     PALETTE_OUT                        ; R
     add al, 0x08
@@ -12,6 +21,6 @@ palette_loop:
     PALETTE_OUT                        ; G
     PALETTE_OUT                        ; B
     inc bx
-    loop palette_loop
+    loop .palette_loop
 
     %endif
