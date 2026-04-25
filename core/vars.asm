@@ -1,3 +1,5 @@
+    %ifndef CORE_VARS
+    %define CORE_VARS
 
     section .bss
 u:
@@ -14,7 +16,4 @@ f_v:
 i:
     resd 1
 
-    %ifndef COM
-image:
-    resb BUFFER_SIZE
     %endif

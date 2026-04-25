@@ -1,0 +1,4 @@
+[submodule "tinywork"]
+	path = tinywork
+	url = git@github.com:JakimPL/TinyWork.git
+	branch = main

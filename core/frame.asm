@@ -17,11 +17,6 @@
     %define FRAME_COUNT (REG(bp))
     %define FOCAL (REG(bp) + 2)
 
-    section .text
-draw:
-    %ifndef COM
-    pusha
-    %endif
 clear_buffers:
 .clear_video_buffer:
     %ifdef COM
@@ -177,13 +172,3 @@ u_loop_exit:
 
 draw_exit:
     inc word [FRAME_COUNT]             ; frame_count++
-
-    %ifndef COM
-    popa
-    ret
-
-    %include "core/data.asm"
-    %include "core/consts.asm"
-    %include "core/vars.asm"
-    %include "core/pixel.asm"
-    %endif
