@@ -6,6 +6,10 @@ A tiny (256b) demo for DOS¹ featuring forward projection of a spiral.
 
 ¹ And some other platforms as well.
 
+## About
+
+This demo was built using [**TinyWork**](https://github.com/JakimPL/TinyWork) — a cross-platform build framework for debuggable size-coded demos and 256-byte productions.
+
 ## Building
 
 ### Supported Platforms

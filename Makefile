@@ -3,6 +3,7 @@
 # Project configuration
 PROJECT_NAME = spirward
 TINYWORK_DIR = tinywork
+SOURCE_DIR = core
 
 # Demo-specific assembly flags
 SCANLINE ?= 0
