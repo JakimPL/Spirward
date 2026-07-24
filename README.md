@@ -33,6 +33,18 @@ To build all targets, you'll need:
 
 For just the 256-byte COM demo, you only need NASM.
 
+### TinyWork
+
+Before you build anything, initialize the TinyWork submodule that provides the shared build system:
+
+```bash
+make tinywork
+# or:
+git submodule update --init --recursive
+```
+
+This step is **required**.
+
 ### Building the Demo
 
 The project uses a Makefile with several targets:
